@@ -1,0 +1,287 @@
+Objectives:
+
+To design a simple expressive C-like programming language.
+To reduce syntax complexity for beginner programmers.
+To demonstrate core compiler phases using Flex and Bison.
+To translate Luminix code into valid and executable C code.
+
+Language Name: Luminix - bright, learning-focused, futuristic.
+
+Luminix is a beginner-friendly, educational, C-like programming language designed for easy understanding and structured learning. It provides intuitive keywords for data types, control structures, functions, and operators while preserving the logical structure of C. Each Luminix construct has a direct and transparent equivalent in C, making it ideal for learning programming fundamentals and compiler concepts.
+
+Tools:
+
+Flex (Lexical Analyzer):
+Used to tokenize source code, identifying keywords, identifiers, constants, operators, and symbols.
+
+Bison (Syntax Analyzer):
+Used to define grammar rules, validate syntax, and construct parse trees for programs.
+
+C Language:
+Used as the target language for code generation.
+
+
+1. Data Types:
+
+Luminix            C Equivalent        Meaning
+Number             int                 Integer data type
+Decimal            float               Floating point data
+LargeDecimal       double              Double precision
+Letter             char                Character type
+TrueFalse          bool                Boolean type
+Nothing            void                No return value
+BigNumber          long                Long integer
+SmallNumber        short               Short integer
+Positive           unsigned            Non-negative values
+
+
+2. User-defined data types:
+
+Luminix            C Equivalent        Meaning
+Record             struct              Groups different types of data under one name
+SharedRecord       union               Stores different data types in the same memory location
+Rename             typedef             Gives a new name (alias) to an existing data type
+Choices            enum                Defines a set of named constant values
+
+
+3. Arrays:
+
+Luminix                    C Equivalent         Meaning
+Number arr[size]           int arr[size]        One-dimensional array
+Number arr[r][c]           int arr[r][c]        Two-dimensional array
+arr[index]                 arr[index]           Access array element
+
+
+4. Variable declaration and assignment:
+
+Luminix Syntax             C Syntax             Meaning
+<Type> <variable>;         <Type> <variable>;   Declares a variable
+=                          =                    Assignment operator
+
+
+5. Input / Output:
+
+Luminix            C Equivalent        Meaning
+Show()             printf()            Printing output on display
+Take()             scanf()             Take input from user
+
+
+6. Conditional Statements:
+
+Luminix                         C Equivalent
+Check(condition) {              if(condition) {
+    // code                        // code
+}
+
+Otherwise {                     else {
+}
+
+ElseCheck(condition) {          else if(condition) {
+}
+
+Choose                         switch
+Option                         case
+DefaultOption                  default
+Stop                           break
+Return                         return
+
+
+7. Looping Statements:
+
+Luminix:
+
+Repeat(initialize; condition; update) {
+    // body
+}
+
+C Equivalent:
+
+for(initialize; condition; update) {
+    // body
+}
+
+Luminix:
+
+WhileStudy(test-expression){
+    // body
+}
+
+C Equivalent:
+
+while(test-expression){
+    // body
+}
+
+Luminix:
+
+DoOnce{
+    // body
+}WhileStudy(test-expression);
+
+C Equivalent:
+
+do{
+    // body
+}while(test-expression);
+
+Skip -> continue
+
+
+8. Functions:
+
+Luminix                       C Equivalent
+<Type> functionName() { }     <Type> functionName() { }
+StartExam()                   main()
+
+
+9. Mathematical Functions:
+
+Luminix            C Equivalent
+Power(x,y)         pow(x,y)
+Root(x)            sqrt(x)
+Absolute(x)        abs(x)
+Floor(x)           floor(x)
+Ceil(x)            ceil(x)
+
+
+10. Arithmetic Operators:
+
++   Addition
+-   Subtraction
+*   Multiplication
+/   Division
+%   Modulus
+
+
+11. Relational Operators:
+
+==   Equal to
+!=   Not equal to
+>    Greater than
+<    Less than
+>=   Greater or equal
+<=   Less or equal
+
+
+12. Logical Operators:
+
+&&   Logical AND
+||   Logical OR
+!    Logical NOT
+
+
+13. Bitwise Operators:
+
+&    Bitwise AND
+|    Bitwise OR
+^    Bitwise XOR
+<<   Left shift
+>>   Right shift
+
+
+14. Increment-Decrement Operators:
+
+++   Increment
+--   Decrement
+
+
+15. Comments:
+
+Luminix               C Equivalent
+## comment            // comment
+#* ... *#             /* ... */
+
+
+16. Preprocessor Directives:
+
+Luminix            C Equivalent
+#Import            #include
+#Suppose           #define
+
+
+17. Constant:
+
+Luminix            C Equivalent
+Constant           const
+
+
+18. Special Symbols:
+
+;   Statement terminator
+(   Open parenthesis
+)   Close parenthesis
+{   Block start
+}   Block end
+,   Separator
+
+
+19. Pointers:
+
+*   Pointer declaration
+&   Address operator
+
+
+
+Example Code:
+
+Luminix Code
+
+#Attach <stdio.h>
+
+StartExam() {
+
+    Number x;
+
+    Show("Enter a number: ");
+    Take("%d", &x);
+
+    Check(x % 2 == 0) {
+
+        Show("Even number");
+    }
+    Otherwise {
+
+        Show("Odd number");
+    }
+
+    Return 0;
+}
+
+
+
+Equivalent C Code
+
+#include <stdio.h>
+
+int main() {
+
+    int x;
+
+    printf("Enter a number: ");
+    scanf("%d", &x);
+
+    if (x % 2 == 0) {
+
+        printf("Even number");
+
+    } else {
+
+        printf("Odd number");
+    }
+
+    return 0;
+}
+
+
+
+Expected Outcomes:
+
+• A fully functional mini-compiler for the Luminix language.
+• Error-free translation of Luminix programs into C.
+• Improved understanding of compiler design concepts.
+• A practical educational tool for beginner programmers.
+
+
+Conclusion:
+
+Luminix successfully bridges the gap between beginner-friendly programming and professional-level C programming. By combining simplified syntax with a direct C mapping, the language allows learners to focus on problem-solving and logic rather than syntax complexity. The use of Flex and Bison ensures a structured and modular compiler design, making the project both educational and technically sound.
