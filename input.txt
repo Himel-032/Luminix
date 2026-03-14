@@ -113,7 +113,28 @@ StartExam(){
     Show("Array sum:");
     Show(sum);
 
+    ## 2D array 
+
+    Decimal matrix[2][3];
+    matrix[0][0] = 1;
+    matrix[0][1] = 2;
+    matrix[0][2] = 3;
+    matrix[1][2] = 20;
+
+    Show(matrix[0][1]);
+    Show(matrix[1][2]);
+
     Show("Program finished successfully");
+
+    Positive m = 10;
+    Show(m);
+    Positive n ;
+    Take(n);
+    Show(n);
+    Show("______");
+    Letter l;
+    Take(l);
+    Show(l);
 
     Return 0;
 }

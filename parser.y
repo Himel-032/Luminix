@@ -1,3 +1,5 @@
+/* bison -d parser.y; flex lexer.l; gcc parser.tab.c lex.yy.c -o luminix; ./luminix input.txt */
+
 %{
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,9 +15,15 @@ extern int yylineno;
 typedef struct{
     char name[50];
     double value;
+    int type; /* 0: numeric, 1: char */
     int is_array;
+    int dimensions; /* 1= 1D, 2 = 2D */
+    int rows;
+    int cols;
     double array_values[100];
     int array_size;
+
+    double array2d[50][50];
 } Symbol;
 
 Symbol symtab[1000];
@@ -23,7 +31,9 @@ int symcount = 0;
 int execute_flag = 1;  /* 1 = execute, 0 = skip */
 int loop_flag = 0;     /* 1 = in loop, 0 = not in loop */
 
-void set_symbol(char *name,double value){
+int current_decl_type = 0; /* 0: numeric, 1: char */
+
+void set_symbol(char *name, double value){
     for(int i=0;i<symcount;i++){
         if(strcmp(symtab[i].name,name)==0){
             symtab[i].value=value;
@@ -32,9 +42,67 @@ void set_symbol(char *name,double value){
     }
     strcpy(symtab[symcount].name,name);
     symtab[symcount].value=value;
+    symtab[symcount].type=current_decl_type;
     symtab[symcount].is_array=0;
     symtab[symcount].array_size=0;
     symcount++;
+}
+
+int get_symbol_type(char *name){
+    for(int i=0;i<symcount;i++){
+        if(strcmp(symtab[i].name,name)==0)
+            return symtab[i].type;
+    }
+    return 0;
+}
+
+void declare_2d_array(char *name,int r,int c){
+    strcpy(symtab[symcount].name,name);
+
+    symtab[symcount].is_array = 1;
+    symtab[symcount].dimensions = 2;
+
+    symtab[symcount].rows = r;
+    symtab[symcount].cols = c;
+    symtab[symcount].type = current_decl_type;
+
+    for(int i=0;i<r;i++)
+        for(int j=0;j<c;j++)
+            symtab[symcount].array2d[i][j] = 0;
+
+    symcount++;
+}
+
+void set_array2d_element(char *name,int r,int c,double value){
+    for(int i=0;i<symcount;i++){
+        if(strcmp(symtab[i].name,name)==0){
+
+            if(symtab[i].dimensions == 2 &&
+               r < symtab[i].rows &&
+               c < symtab[i].cols){
+
+                symtab[i].array2d[r][c] = value;
+            }
+
+            return;
+        }
+    }
+}
+double get_array2d_element(char *name,int r,int c){
+    for(int i=0;i<symcount;i++){
+        if(strcmp(symtab[i].name,name)==0){
+
+            if(symtab[i].dimensions == 2 &&
+               r < symtab[i].rows &&
+               c < symtab[i].cols){
+
+                return symtab[i].array2d[r][c];
+            }
+        }
+    }
+
+    printf("Runtime error: 2D array access error\n");
+    return 0;
 }
 
 void set_array_element(char *name, int index, double value){
@@ -63,7 +131,9 @@ double get_array_element(char *name, int index){
 void declare_array(char *name, int size){
     strcpy(symtab[symcount].name,name);
     symtab[symcount].is_array=1;
+    symtab[symcount].dimensions=1;
     symtab[symcount].array_size=size;
+    symtab[symcount].type = current_decl_type;
     for(int i=0;i<size;i++){
         symtab[symcount].array_values[i]=0;
     }
@@ -180,6 +250,11 @@ declaration
         { /* handled in identifier_list actions */ }
     | type IDENTIFIER LBRACKET array_size RBRACKET SEMI
         { if(execute_flag) declare_array($2,$4); }
+    | type IDENTIFIER LBRACKET array_size RBRACKET LBRACKET array_size RBRACKET SEMI
+    { 
+        if(execute_flag)
+            declare_2d_array($2,$4,$7); 
+    }
     ;
 
 array_size
@@ -187,15 +262,15 @@ array_size
     ;
 
 type
-    : INT_TYPE
-    | FLOAT_TYPE
-    | DOUBLE_TYPE
-    | CHAR_TYPE
-    | BOOL_TYPE
-    | VOID_TYPE
-    | LONG_TYPE
-    | SHORT_TYPE
-    | UNSIGNED_TYPE
+    : INT_TYPE          { current_decl_type = 0; }
+    | FLOAT_TYPE        { current_decl_type = 0; }
+    | DOUBLE_TYPE       { current_decl_type = 0; }
+    | CHAR_TYPE         { current_decl_type = 1; }
+    | BOOL_TYPE         { current_decl_type = 0; }
+    | VOID_TYPE         { current_decl_type = 0; }
+    | LONG_TYPE         { current_decl_type = 0; }
+    | SHORT_TYPE        { current_decl_type = 0; }
+    | UNSIGNED_TYPE     { current_decl_type = 0; }
     ;
 
 identifier_list
@@ -217,6 +292,8 @@ assignment
 array_assignment
     : IDENTIFIER LBRACKET expression RBRACKET ASSIGN expression
         { if(execute_flag) set_array_element($1,(int)$3,$6); }
+    | IDENTIFIER LBRACKET expression RBRACKET LBRACKET expression RBRACKET ASSIGN expression
+        { if(execute_flag) set_array2d_element($1,(int)$3,(int)$6,$9); }
     ;
 
 /* ---------------- EXPRESSIONS ---------------- */
@@ -254,6 +331,8 @@ primary
 array_access
     : IDENTIFIER LBRACKET expression RBRACKET
         { $$=get_array_element($1,(int)$3); }
+    | IDENTIFIER LBRACKET expression RBRACKET LBRACKET expression RBRACKET
+        { $$ = get_array2d_element($1,(int)$3,(int)$6); }
     ;
 
 /* ---------------- FUNCTIONS ---------------- */
@@ -283,6 +362,14 @@ print_stmt
             printf("%s\n",s); 
           }
         }
+    | PRINT LPAREN IDENTIFIER RPAREN SEMI
+        { if(execute_flag) {
+            int t = get_symbol_type($3);
+            double v = get_symbol($3);
+            if(t == 1) printf("%c\n", (int)v);
+            else printf("%g\n", v);
+          }
+        }
     | PRINT LPAREN expression RPAREN SEMI
         { if(execute_flag) printf("%g\n",$3); }
     ;
@@ -293,9 +380,16 @@ scan_stmt
     : SCAN LPAREN IDENTIFIER RPAREN SEMI
         {
             if(execute_flag) {
-                double v;
-                scanf("%lf",&v);
-                set_symbol($3,v);
+                int t = get_symbol_type($3);
+                if(t == 1) { /* char */
+                    char v;
+                    scanf(" %c", &v);
+                    set_symbol($3, (double)v);
+                } else {
+                    double v;
+                    scanf("%lf",&v);
+                    set_symbol($3,v);
+                }
             }
         }
     | SCAN LPAREN IDENTIFIER LBRACKET expression RBRACKET RPAREN SEMI
