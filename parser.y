@@ -28,8 +28,7 @@ typedef struct{
 
 Symbol symtab[1000];
 int symcount = 0;
-int 
- = 1;  /* 1 = execute, 0 = skip */
+int execute_flag = 1;  /* 1 = execute, 0 = skip */
 int loop_flag = 0;     /* 1 = in loop, 0 = not in loop */
 
 int current_decl_type = 0; /* 0: numeric, 1: char */
