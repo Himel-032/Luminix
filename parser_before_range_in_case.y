@@ -233,7 +233,6 @@ double get_symbol(char *name){
 %token LPAREN RPAREN
 %token LBRACE RBRACE
 %token LBRACKET RBRACKET
-%token RANGE
 
 %token <ival> INT_LITERAL
 %token <fval> FLOAT_LITERAL
@@ -242,7 +241,6 @@ double get_symbol(char *name){
 %token <sval> IDENTIFIER
 
 %type <dval> expression term factor primary condition function_call array_access
-
 %type <ival> array_size
 
 %left OR
@@ -553,9 +551,26 @@ case_list
     ;
 
 case_item
-    : CASE case_expr COLON
+    : CASE expression COLON
         {
-            /* case_expr already set execute_flag appropriately */
+            SwitchFrame *f = switch_cur();
+            if (f == NULL) {
+                yyerror("case outside switch");
+                execute_flag = 0;
+            } else if (f->done) {
+                /* break already hit — skip everything */
+                execute_flag = 0;
+            } else if (f->matched) {
+                /* fall-through: previous case ran without break */
+                execute_flag = 1;
+            } else if (fabs(f->value - $2) < SWITCH_EPSILON) {
+                /* first matching case */
+                f->matched   = 1;
+                execute_flag = 1;
+            } else {
+                /* not matched yet */
+                execute_flag = 0;
+            }
         }
       statement_list
         {
@@ -564,49 +579,6 @@ case_item
                 f->done      = 1;
                 execute_flag = 0;
                 break_flag   = 0;
-            }
-        }
-    ;
-
-case_expr
-    : expression
-        {
-            SwitchFrame *f = switch_cur();
-            if (f == NULL) {
-                yyerror("case outside switch");
-                execute_flag = 0;
-            } else if (f->done) {
-                execute_flag = 0;
-            } else if (f->matched) {
-                execute_flag = 1;
-            } else if (fabs(f->value - $1) < SWITCH_EPSILON) {
-                f->matched   = 1;
-                execute_flag = 1;
-            } else {
-                execute_flag = 0;
-            }
-        }
-    | expression RANGE expression
-        {
-            SwitchFrame *f = switch_cur();
-            if (f == NULL) {
-                yyerror("case outside switch");
-                execute_flag = 0;
-            } else if (f->done) {
-                execute_flag = 0;
-            } else if (f->matched) {
-                execute_flag = 1;
-            } else {
-                int start = (int)$1;
-                int end = (int)$3;
-                int val = (int)f->value;
-                
-                if (val >= start && val <= end) {
-                    f->matched   = 1;
-                    execute_flag = 1;
-                } else {
-                    execute_flag = 0;
-                }
             }
         }
     ;
@@ -700,5 +672,3 @@ int main(int argc, char *argv[]){
 
     return 0;
 }
-
-

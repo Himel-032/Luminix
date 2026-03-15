@@ -123,6 +123,7 @@ HEADER_USER  \"[a-zA-Z_][a-zA-Z0-9_]*\.h\"
 ";"                 { return SEMI; }
 ","                 { return COMMA; }
 ":"                 { return COLON; }
+".."                { return RANGE; }
 "("                 { return LPAREN; }
 ")"                 { return RPAREN; }
 "{"                 { return LBRACE; }

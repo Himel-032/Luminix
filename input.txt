@@ -4,16 +4,16 @@
 StartExam(){
 
     Number n = 3;
-    Number m = 1;
+    Number m = 2;
 
     
     Letter l;
 
     Choose(n){
-        Option m: 
+        Option 10..100: 
             Show(1);
             Stop;
-        Option 2:
+        Option m:
             Show(2);
             Stop;
         Option 3:
@@ -37,6 +37,25 @@ StartExam(){
         DefaultOption:
             Show("Default option");
            
+    }
+
+    Number score = 75;
+    
+    Choose(score){
+        Option 0..39:
+            Show("Failed");
+            Stop;
+        Option 40..59:
+            Show("Pass");
+            Stop;
+        Option 60..79:
+            Show("Good");
+            
+        Option 80..100:
+            Show("Excellent");
+            
+        DefaultOption:
+            Show("Invalid score");
     }
 
     

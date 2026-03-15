@@ -125,12 +125,13 @@ extern int yydebug;
     RBRACE = 326,                  /* RBRACE  */
     LBRACKET = 327,                /* LBRACKET  */
     RBRACKET = 328,                /* RBRACKET  */
-    INT_LITERAL = 329,             /* INT_LITERAL  */
-    FLOAT_LITERAL = 330,           /* FLOAT_LITERAL  */
-    STRING_LITERAL = 331,          /* STRING_LITERAL  */
-    CHAR_LITERAL = 332,            /* CHAR_LITERAL  */
-    IDENTIFIER = 333,              /* IDENTIFIER  */
-    UNARY = 334                    /* UNARY  */
+    RANGE = 329,                   /* RANGE  */
+    INT_LITERAL = 330,             /* INT_LITERAL  */
+    FLOAT_LITERAL = 331,           /* FLOAT_LITERAL  */
+    STRING_LITERAL = 332,          /* STRING_LITERAL  */
+    CHAR_LITERAL = 333,            /* CHAR_LITERAL  */
+    IDENTIFIER = 334,              /* IDENTIFIER  */
+    UNARY = 335                    /* UNARY  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -147,7 +148,7 @@ union YYSTYPE
     char *sval;
     double dval;
 
-#line 151 "parser.tab.h"
+#line 152 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
