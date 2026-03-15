@@ -3,26 +3,43 @@
 
 StartExam(){
 
-    Number a, b, c, d;
-    a = 1;
-    b = 2;
-    c = 3;
-    d = 500;
-    Check(a==1){ Show("a==1"); }
-Check(a==0){ Show("a==0"); }
-ElseCheck(b==0){ Show("b==0"); }
-Otherwise{
-    Show("Top Otherwise");
-    Check(c==999){ Show("c==999"); }
-    Otherwise{ Show("Nested Otherwise corner case"); }
-}
-Check(a==0){ Show("a==0"); }
-ElseCheck(b==0){ Show("b==0"); }
-Otherwise{
-    Show("Top Otherwise");
-    Check(c==999){ Show("c==999"); }
-    Otherwise{ Show("Nested Otherwise corner case"); }
-}
+    Number n = 3;
+    Number m = 1;
+
+    
+    Letter l;
+
+    Choose(n){
+        Option m: 
+            Show(1);
+            Stop;
+        Option 2:
+            Show(2);
+            Stop;
+        Option 3:
+            Show(3);
+            Take(l);
+            Choose(l){
+                Option 'a':
+                    Show(l);
+                    Stop;
+                Option 'b':
+                    Show(l);
+                    Stop;
+                Option 'c':
+                    Show(l);
+                    Stop;
+                DefaultOption:
+                    Show("Inner Default");
+            }
+            Stop;
+            
+        DefaultOption:
+            Show("Default option");
+           
+    }
+
+    
 
     Return 0;
 }

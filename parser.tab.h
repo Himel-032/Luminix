@@ -118,18 +118,19 @@ extern int yydebug;
     SHR = 319,                     /* SHR  */
     SEMI = 320,                    /* SEMI  */
     COMMA = 321,                   /* COMMA  */
-    LPAREN = 322,                  /* LPAREN  */
-    RPAREN = 323,                  /* RPAREN  */
-    LBRACE = 324,                  /* LBRACE  */
-    RBRACE = 325,                  /* RBRACE  */
-    LBRACKET = 326,                /* LBRACKET  */
-    RBRACKET = 327,                /* RBRACKET  */
-    INT_LITERAL = 328,             /* INT_LITERAL  */
-    FLOAT_LITERAL = 329,           /* FLOAT_LITERAL  */
-    STRING_LITERAL = 330,          /* STRING_LITERAL  */
-    CHAR_LITERAL = 331,            /* CHAR_LITERAL  */
-    IDENTIFIER = 332,              /* IDENTIFIER  */
-    UNARY = 333                    /* UNARY  */
+    COLON = 322,                   /* COLON  */
+    LPAREN = 323,                  /* LPAREN  */
+    RPAREN = 324,                  /* RPAREN  */
+    LBRACE = 325,                  /* LBRACE  */
+    RBRACE = 326,                  /* RBRACE  */
+    LBRACKET = 327,                /* LBRACKET  */
+    RBRACKET = 328,                /* RBRACKET  */
+    INT_LITERAL = 329,             /* INT_LITERAL  */
+    FLOAT_LITERAL = 330,           /* FLOAT_LITERAL  */
+    STRING_LITERAL = 331,          /* STRING_LITERAL  */
+    CHAR_LITERAL = 332,            /* CHAR_LITERAL  */
+    IDENTIFIER = 333,              /* IDENTIFIER  */
+    UNARY = 334                    /* UNARY  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -138,7 +139,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 154 "parser.y"
+#line 198 "parser.y"
 
     int ival;
     float fval;
@@ -146,7 +147,7 @@ union YYSTYPE
     char *sval;
     double dval;
 
-#line 150 "parser.tab.h"
+#line 151 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
