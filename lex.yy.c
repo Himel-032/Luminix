@@ -698,7 +698,7 @@ char *yytext;
     #include <stdio.h>
     #include <stdlib.h>
     #include <string.h>
-    #include "parser.tab.h"
+    #include "parser2.tab.h"
   
     
 #line 704 "lex.yy.c"
