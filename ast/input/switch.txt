@@ -39,7 +39,7 @@ StartExam(){
            
     }
 
-    Number score = 35;
+    Number score = 75;
     
     Choose(score){
         Option 0..39:
