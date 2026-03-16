@@ -6,7 +6,7 @@ StartExam(){
     Number n = 1;
     WhileStudy(n < 5){
         Show(n);
-
+        n = n+1;
     }
 
     Return 0;

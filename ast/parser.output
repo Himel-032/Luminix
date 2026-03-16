@@ -1,0 +1,3116 @@
+Terminals unused in grammar
+
+    CONST
+    STRUCT
+    UNION
+    TYPEDEF
+    ENUM
+    DO
+    CONTINUE
+    AND
+    OR
+    NOT
+    INC
+    DEC
+    BIT_AND
+    BIT_OR
+    BIT_XOR
+    BIT_NOT
+    SHL
+    SHR
+
+
+State 99 conflicts: 1 shift/reduce
+
+
+Grammar
+
+    0 $accept: program $end
+
+    1 program: preprocessor_list main_function
+
+    2 preprocessor_list: preprocessor_list preprocessor
+    3                  | ε
+
+    4 preprocessor: INCLUDE HEADER
+    5             | DEFINE IDENTIFIER INT_LITERAL
+
+    6 main_function: MAIN LPAREN RPAREN LBRACE statement_list RBRACE
+
+    7 statement_list: statement_list statement
+    8               | ε
+
+    9 statement: declaration
+   10          | assignment SEMI
+   11          | array_assignment SEMI
+   12          | print_stmt
+   13          | scan_stmt
+   14          | if_stmt
+   15          | switch_stmt
+   16          | BREAK SEMI
+   17          | loop_stmt
+   18          | return_stmt SEMI
+
+   19 declaration: type identifier_list_decls SEMI
+   20            | type IDENTIFIER LBRACKET array_size RBRACKET SEMI
+   21            | type IDENTIFIER LBRACKET array_size RBRACKET LBRACKET array_size RBRACKET SEMI
+
+   22 array_size: INT_LITERAL
+
+   23 type: INT_TYPE
+   24     | FLOAT_TYPE
+   25     | DOUBLE_TYPE
+   26     | CHAR_TYPE
+   27     | BOOL_TYPE
+   28     | VOID_TYPE
+   29     | LONG_TYPE
+   30     | SHORT_TYPE
+   31     | UNSIGNED_TYPE
+
+   32 identifier_list_decls: IDENTIFIER
+   33                      | IDENTIFIER ASSIGN expression
+   34                      | IDENTIFIER COMMA identifier_list_decls
+   35                      | IDENTIFIER ASSIGN expression COMMA identifier_list_decls
+
+   36 assignment: IDENTIFIER ASSIGN expression
+
+   37 array_assignment: IDENTIFIER LBRACKET expression RBRACKET ASSIGN expression
+   38                 | IDENTIFIER LBRACKET expression RBRACKET LBRACKET expression RBRACKET ASSIGN expression
+
+   39 expression: expression PLUS term
+   40           | expression MINUS term
+   41           | MINUS term
+   42           | term
+
+   43 term: term MUL factor
+   44     | term DIV factor
+   45     | term MOD factor
+   46     | factor
+
+   47 factor: primary
+
+   48 primary: IDENTIFIER
+   49        | INT_LITERAL
+   50        | FLOAT_LITERAL
+   51        | TRUE_LITERAL
+   52        | FALSE_LITERAL
+   53        | CHAR_LITERAL
+   54        | LPAREN expression RPAREN
+   55        | function_call
+   56        | array_access
+
+   57 array_access: IDENTIFIER LBRACKET expression RBRACKET
+   58             | IDENTIFIER LBRACKET expression RBRACKET LBRACKET expression RBRACKET
+
+   59 function_call: POW LPAREN expression COMMA expression RPAREN
+   60              | SQRT LPAREN expression RPAREN
+   61              | ABS LPAREN expression RPAREN
+   62              | FLOOR LPAREN expression RPAREN
+   63              | CEIL LPAREN expression RPAREN
+
+   64 print_stmt: PRINT LPAREN STRING_LITERAL RPAREN SEMI
+   65           | PRINT LPAREN IDENTIFIER RPAREN SEMI
+   66           | PRINT LPAREN expression RPAREN SEMI
+
+   67 scan_stmt: SCAN LPAREN IDENTIFIER RPAREN SEMI
+   68          | SCAN LPAREN IDENTIFIER LBRACKET expression RBRACKET RPAREN SEMI
+
+   69 condition: expression EQ expression
+   70          | expression NEQ expression
+   71          | expression GT expression
+   72          | expression LT expression
+   73          | expression GE expression
+   74          | expression LE expression
+
+   75 if_stmt: IF LPAREN condition RPAREN LBRACE statement_list RBRACE else_if_part
+
+   76 else_if_part: ELSEIF LPAREN condition RPAREN LBRACE statement_list RBRACE else_if_part
+   77             | ELSE LBRACE statement_list RBRACE
+   78             | ε
+
+   79 switch_stmt: SWITCH LPAREN expression RPAREN LBRACE case_list RBRACE
+
+   80 case_list: case_list case_item
+   81          | case_list default_item
+   82          | ε
+
+   83 case_item: CASE case_expr COLON statement_list
+
+   84 case_expr: expression
+   85          | expression RANGE expression
+
+   86 default_item: DEFAULT COLON statement_list
+
+   87 for_update: assignment
+
+   88 loop_stmt: WHILE LPAREN condition RPAREN LBRACE statement_list RBRACE
+   89          | FOR LPAREN assignment SEMI condition SEMI for_update RPAREN LBRACE statement_list RBRACE
+
+   90 return_stmt: RETURN expression
+
+
+Terminals, with rules where they appear
+
+    $end (0) 0
+    error (256)
+    INCLUDE (258) 4
+    DEFINE (259) 5
+    HEADER (260) 4
+    INT_TYPE (261) 23
+    FLOAT_TYPE (262) 24
+    DOUBLE_TYPE (263) 25
+    CHAR_TYPE (264) 26
+    BOOL_TYPE (265) 27
+    VOID_TYPE (266) 28
+    LONG_TYPE (267) 29
+    SHORT_TYPE (268) 30
+    UNSIGNED_TYPE (269) 31
+    CONST (270)
+    STRUCT (271)
+    UNION (272)
+    TYPEDEF (273)
+    ENUM (274)
+    IF (275) 75
+    ELSE (276) 77
+    ELSEIF (277) 76
+    SWITCH (278) 79
+    CASE (279) 83
+    DEFAULT (280) 86
+    FOR (281) 89
+    WHILE (282) 88
+    DO (283)
+    BREAK (284) 16
+    CONTINUE (285)
+    RETURN (286) 90
+    MAIN (287) 6
+    PRINT (288) 64 65 66
+    SCAN (289) 67 68
+    TRUE_LITERAL (290) 51
+    FALSE_LITERAL (291) 52
+    POW (292) 59
+    SQRT (293) 60
+    ABS (294) 61
+    FLOOR (295) 62
+    CEIL (296) 63
+    EQ (297) 69
+    NEQ (298) 70
+    GE (299) 73
+    LE (300) 74
+    GT (301) 71
+    LT (302) 72
+    AND (303)
+    OR (304)
+    NOT (305)
+    INC (306)
+    DEC (307)
+    PLUS (308) 39
+    MINUS (309) 40 41
+    MUL (310) 43
+    DIV (311) 44
+    MOD (312) 45
+    ASSIGN (313) 33 35 36 37 38
+    BIT_AND (314)
+    BIT_OR (315)
+    BIT_XOR (316)
+    BIT_NOT (317)
+    SHL (318)
+    SHR (319)
+    SEMI (320) 10 11 16 18 19 20 21 64 65 66 67 68 89
+    COMMA (321) 34 35 59
+    COLON (322) 83 86
+    LPAREN (323) 6 54 59 60 61 62 63 64 65 66 67 68 75 76 79 88 89
+    RPAREN (324) 6 54 59 60 61 62 63 64 65 66 67 68 75 76 79 88 89
+    LBRACE (325) 6 75 76 77 79 88 89
+    RBRACE (326) 6 75 76 77 79 88 89
+    LBRACKET (327) 20 21 37 38 57 58 68
+    RBRACKET (328) 20 21 37 38 57 58 68
+    RANGE (329) 85
+    INT_LITERAL <ival> (330) 5 22 49
+    FLOAT_LITERAL <fval> (331) 50
+    STRING_LITERAL <sval> (332) 64
+    CHAR_LITERAL <cval> (333) 53
+    IDENTIFIER <sval> (334) 5 20 21 32 33 34 35 36 37 38 48 57 58 65 67 68
+    UNARY (335)
+
+
+Nonterminals, with rules where they appear
+
+    $accept (81)
+        on left: 0
+    program (82)
+        on left: 1
+        on right: 0
+    preprocessor_list (83)
+        on left: 2 3
+        on right: 1 2
+    preprocessor (84)
+        on left: 4 5
+        on right: 2
+    main_function (85)
+        on left: 6
+        on right: 1
+    statement_list <node> (86)
+        on left: 7 8
+        on right: 6 7 75 76 77 83 86 88 89
+    statement <node> (87)
+        on left: 9 10 11 12 13 14 15 16 17 18
+        on right: 7
+    declaration <node> (88)
+        on left: 19 20 21
+        on right: 9
+    array_size <ival> (89)
+        on left: 22
+        on right: 20 21
+    type (90)
+        on left: 23 24 25 26 27 28 29 30 31
+        on right: 19 20 21
+    identifier_list_decls <node> (91)
+        on left: 32 33 34 35
+        on right: 19 34 35
+    assignment <node> (92)
+        on left: 36
+        on right: 10 87 89
+    array_assignment <node> (93)
+        on left: 37 38
+        on right: 11
+    expression <node> (94)
+        on left: 39 40 41 42
+        on right: 33 35 36 37 38 39 40 54 57 58 59 60 61 62 63 66 68 69 70 71 72 73 74 79 84 85 90
+    term <node> (95)
+        on left: 43 44 45 46
+        on right: 39 40 41 42 43 44 45
+    factor <node> (96)
+        on left: 47
+        on right: 43 44 45 46
+    primary <node> (97)
+        on left: 48 49 50 51 52 53 54 55 56
+        on right: 47
+    array_access <node> (98)
+        on left: 57 58
+        on right: 56
+    function_call <node> (99)
+        on left: 59 60 61 62 63
+        on right: 55
+    print_stmt <node> (100)
+        on left: 64 65 66
+        on right: 12
+    scan_stmt <node> (101)
+        on left: 67 68
+        on right: 13
+    condition <node> (102)
+        on left: 69 70 71 72 73 74
+        on right: 75 76 88 89
+    if_stmt <node> (103)
+        on left: 75
+        on right: 14
+    else_if_part <node> (104)
+        on left: 76 77 78
+        on right: 75 76
+    switch_stmt <node> (105)
+        on left: 79
+        on right: 15
+    case_list <node> (106)
+        on left: 80 81 82
+        on right: 79 80 81
+    case_item <node> (107)
+        on left: 83
+        on right: 80
+    case_expr <node> (108)
+        on left: 84 85
+        on right: 83
+    default_item <node> (109)
+        on left: 86
+        on right: 81
+    for_update <node> (110)
+        on left: 87
+        on right: 89
+    loop_stmt <node> (111)
+        on left: 88 89
+        on right: 17
+    return_stmt <node> (112)
+        on left: 90
+        on right: 18
+
+
+State 0
+
+    0 $accept: • program $end
+
+    $default  reduce using rule 3 (preprocessor_list)
+
+    program            go to state 1
+    preprocessor_list  go to state 2
+
+
+State 1
+
+    0 $accept: program • $end
+
+    $end  shift, and go to state 3
+
+
+State 2
+
+    1 program: preprocessor_list • main_function
+    2 preprocessor_list: preprocessor_list • preprocessor
+
+    INCLUDE  shift, and go to state 4
+    DEFINE   shift, and go to state 5
+    MAIN     shift, and go to state 6
+
+    preprocessor   go to state 7
+    main_function  go to state 8
+
+
+State 3
+
+    0 $accept: program $end •
+
+    $default  accept
+
+
+State 4
+
+    4 preprocessor: INCLUDE • HEADER
+
+    HEADER  shift, and go to state 9
+
+
+State 5
+
+    5 preprocessor: DEFINE • IDENTIFIER INT_LITERAL
+
+    IDENTIFIER  shift, and go to state 10
+
+
+State 6
+
+    6 main_function: MAIN • LPAREN RPAREN LBRACE statement_list RBRACE
+
+    LPAREN  shift, and go to state 11
+
+
+State 7
+
+    2 preprocessor_list: preprocessor_list preprocessor •
+
+    $default  reduce using rule 2 (preprocessor_list)
+
+
+State 8
+
+    1 program: preprocessor_list main_function •
+
+    $default  reduce using rule 1 (program)
+
+
+State 9
+
+    4 preprocessor: INCLUDE HEADER •
+
+    $default  reduce using rule 4 (preprocessor)
+
+
+State 10
+
+    5 preprocessor: DEFINE IDENTIFIER • INT_LITERAL
+
+    INT_LITERAL  shift, and go to state 12
+
+
+State 11
+
+    6 main_function: MAIN LPAREN • RPAREN LBRACE statement_list RBRACE
+
+    RPAREN  shift, and go to state 13
+
+
+State 12
+
+    5 preprocessor: DEFINE IDENTIFIER INT_LITERAL •
+
+    $default  reduce using rule 5 (preprocessor)
+
+
+State 13
+
+    6 main_function: MAIN LPAREN RPAREN • LBRACE statement_list RBRACE
+
+    LBRACE  shift, and go to state 14
+
+
+State 14
+
+    6 main_function: MAIN LPAREN RPAREN LBRACE • statement_list RBRACE
+
+    $default  reduce using rule 8 (statement_list)
+
+    statement_list  go to state 15
+
+
+State 15
+
+    6 main_function: MAIN LPAREN RPAREN LBRACE statement_list • RBRACE
+    7 statement_list: statement_list • statement
+
+    INT_TYPE       shift, and go to state 16
+    FLOAT_TYPE     shift, and go to state 17
+    DOUBLE_TYPE    shift, and go to state 18
+    CHAR_TYPE      shift, and go to state 19
+    BOOL_TYPE      shift, and go to state 20
+    VOID_TYPE      shift, and go to state 21
+    LONG_TYPE      shift, and go to state 22
+    SHORT_TYPE     shift, and go to state 23
+    UNSIGNED_TYPE  shift, and go to state 24
+    IF             shift, and go to state 25
+    SWITCH         shift, and go to state 26
+    FOR            shift, and go to state 27
+    WHILE          shift, and go to state 28
+    BREAK          shift, and go to state 29
+    RETURN         shift, and go to state 30
+    PRINT          shift, and go to state 31
+    SCAN           shift, and go to state 32
+    RBRACE         shift, and go to state 33
+    IDENTIFIER     shift, and go to state 34
+
+    statement         go to state 35
+    declaration       go to state 36
+    type              go to state 37
+    assignment        go to state 38
+    array_assignment  go to state 39
+    print_stmt        go to state 40
+    scan_stmt         go to state 41
+    if_stmt           go to state 42
+    switch_stmt       go to state 43
+    loop_stmt         go to state 44
+    return_stmt       go to state 45
+
+
+State 16
+
+   23 type: INT_TYPE •
+
+    $default  reduce using rule 23 (type)
+
+
+State 17
+
+   24 type: FLOAT_TYPE •
+
+    $default  reduce using rule 24 (type)
+
+
+State 18
+
+   25 type: DOUBLE_TYPE •
+
+    $default  reduce using rule 25 (type)
+
+
+State 19
+
+   26 type: CHAR_TYPE •
+
+    $default  reduce using rule 26 (type)
+
+
+State 20
+
+   27 type: BOOL_TYPE •
+
+    $default  reduce using rule 27 (type)
+
+
+State 21
+
+   28 type: VOID_TYPE •
+
+    $default  reduce using rule 28 (type)
+
+
+State 22
+
+   29 type: LONG_TYPE •
+
+    $default  reduce using rule 29 (type)
+
+
+State 23
+
+   30 type: SHORT_TYPE •
+
+    $default  reduce using rule 30 (type)
+
+
+State 24
+
+   31 type: UNSIGNED_TYPE •
+
+    $default  reduce using rule 31 (type)
+
+
+State 25
+
+   75 if_stmt: IF • LPAREN condition RPAREN LBRACE statement_list RBRACE else_if_part
+
+    LPAREN  shift, and go to state 46
+
+
+State 26
+
+   79 switch_stmt: SWITCH • LPAREN expression RPAREN LBRACE case_list RBRACE
+
+    LPAREN  shift, and go to state 47
+
+
+State 27
+
+   89 loop_stmt: FOR • LPAREN assignment SEMI condition SEMI for_update RPAREN LBRACE statement_list RBRACE
+
+    LPAREN  shift, and go to state 48
+
+
+State 28
+
+   88 loop_stmt: WHILE • LPAREN condition RPAREN LBRACE statement_list RBRACE
+
+    LPAREN  shift, and go to state 49
+
+
+State 29
+
+   16 statement: BREAK • SEMI
+
+    SEMI  shift, and go to state 50
+
+
+State 30
+
+   90 return_stmt: RETURN • expression
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    MINUS          shift, and go to state 58
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    expression     go to state 64
+    term           go to state 65
+    factor         go to state 66
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+
+
+State 31
+
+   64 print_stmt: PRINT • LPAREN STRING_LITERAL RPAREN SEMI
+   65           | PRINT • LPAREN IDENTIFIER RPAREN SEMI
+   66           | PRINT • LPAREN expression RPAREN SEMI
+
+    LPAREN  shift, and go to state 70
+
+
+State 32
+
+   67 scan_stmt: SCAN • LPAREN IDENTIFIER RPAREN SEMI
+   68          | SCAN • LPAREN IDENTIFIER LBRACKET expression RBRACKET RPAREN SEMI
+
+    LPAREN  shift, and go to state 71
+
+
+State 33
+
+    6 main_function: MAIN LPAREN RPAREN LBRACE statement_list RBRACE •
+
+    $default  reduce using rule 6 (main_function)
+
+
+State 34
+
+   36 assignment: IDENTIFIER • ASSIGN expression
+   37 array_assignment: IDENTIFIER • LBRACKET expression RBRACKET ASSIGN expression
+   38                 | IDENTIFIER • LBRACKET expression RBRACKET LBRACKET expression RBRACKET ASSIGN expression
+
+    ASSIGN    shift, and go to state 72
+    LBRACKET  shift, and go to state 73
+
+
+State 35
+
+    7 statement_list: statement_list statement •
+
+    $default  reduce using rule 7 (statement_list)
+
+
+State 36
+
+    9 statement: declaration •
+
+    $default  reduce using rule 9 (statement)
+
+
+State 37
+
+   19 declaration: type • identifier_list_decls SEMI
+   20            | type • IDENTIFIER LBRACKET array_size RBRACKET SEMI
+   21            | type • IDENTIFIER LBRACKET array_size RBRACKET LBRACKET array_size RBRACKET SEMI
+
+    IDENTIFIER  shift, and go to state 74
+
+    identifier_list_decls  go to state 75
+
+
+State 38
+
+   10 statement: assignment • SEMI
+
+    SEMI  shift, and go to state 76
+
+
+State 39
+
+   11 statement: array_assignment • SEMI
+
+    SEMI  shift, and go to state 77
+
+
+State 40
+
+   12 statement: print_stmt •
+
+    $default  reduce using rule 12 (statement)
+
+
+State 41
+
+   13 statement: scan_stmt •
+
+    $default  reduce using rule 13 (statement)
+
+
+State 42
+
+   14 statement: if_stmt •
+
+    $default  reduce using rule 14 (statement)
+
+
+State 43
+
+   15 statement: switch_stmt •
+
+    $default  reduce using rule 15 (statement)
+
+
+State 44
+
+   17 statement: loop_stmt •
+
+    $default  reduce using rule 17 (statement)
+
+
+State 45
+
+   18 statement: return_stmt • SEMI
+
+    SEMI  shift, and go to state 78
+
+
+State 46
+
+   75 if_stmt: IF LPAREN • condition RPAREN LBRACE statement_list RBRACE else_if_part
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    MINUS          shift, and go to state 58
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    expression     go to state 79
+    term           go to state 65
+    factor         go to state 66
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+    condition      go to state 80
+
+
+State 47
+
+   79 switch_stmt: SWITCH LPAREN • expression RPAREN LBRACE case_list RBRACE
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    MINUS          shift, and go to state 58
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    expression     go to state 81
+    term           go to state 65
+    factor         go to state 66
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+
+
+State 48
+
+   89 loop_stmt: FOR LPAREN • assignment SEMI condition SEMI for_update RPAREN LBRACE statement_list RBRACE
+
+    IDENTIFIER  shift, and go to state 82
+
+    assignment  go to state 83
+
+
+State 49
+
+   88 loop_stmt: WHILE LPAREN • condition RPAREN LBRACE statement_list RBRACE
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    MINUS          shift, and go to state 58
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    expression     go to state 79
+    term           go to state 65
+    factor         go to state 66
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+    condition      go to state 84
+
+
+State 50
+
+   16 statement: BREAK SEMI •
+
+    $default  reduce using rule 16 (statement)
+
+
+State 51
+
+   51 primary: TRUE_LITERAL •
+
+    $default  reduce using rule 51 (primary)
+
+
+State 52
+
+   52 primary: FALSE_LITERAL •
+
+    $default  reduce using rule 52 (primary)
+
+
+State 53
+
+   59 function_call: POW • LPAREN expression COMMA expression RPAREN
+
+    LPAREN  shift, and go to state 85
+
+
+State 54
+
+   60 function_call: SQRT • LPAREN expression RPAREN
+
+    LPAREN  shift, and go to state 86
+
+
+State 55
+
+   61 function_call: ABS • LPAREN expression RPAREN
+
+    LPAREN  shift, and go to state 87
+
+
+State 56
+
+   62 function_call: FLOOR • LPAREN expression RPAREN
+
+    LPAREN  shift, and go to state 88
+
+
+State 57
+
+   63 function_call: CEIL • LPAREN expression RPAREN
+
+    LPAREN  shift, and go to state 89
+
+
+State 58
+
+   41 expression: MINUS • term
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    term           go to state 90
+    factor         go to state 66
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+
+
+State 59
+
+   54 primary: LPAREN • expression RPAREN
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    MINUS          shift, and go to state 58
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    expression     go to state 91
+    term           go to state 65
+    factor         go to state 66
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+
+
+State 60
+
+   49 primary: INT_LITERAL •
+
+    $default  reduce using rule 49 (primary)
+
+
+State 61
+
+   50 primary: FLOAT_LITERAL •
+
+    $default  reduce using rule 50 (primary)
+
+
+State 62
+
+   53 primary: CHAR_LITERAL •
+
+    $default  reduce using rule 53 (primary)
+
+
+State 63
+
+   48 primary: IDENTIFIER •
+   57 array_access: IDENTIFIER • LBRACKET expression RBRACKET
+   58             | IDENTIFIER • LBRACKET expression RBRACKET LBRACKET expression RBRACKET
+
+    LBRACKET  shift, and go to state 92
+
+    $default  reduce using rule 48 (primary)
+
+
+State 64
+
+   39 expression: expression • PLUS term
+   40           | expression • MINUS term
+   90 return_stmt: RETURN expression •
+
+    PLUS   shift, and go to state 93
+    MINUS  shift, and go to state 94
+
+    $default  reduce using rule 90 (return_stmt)
+
+
+State 65
+
+   42 expression: term •
+   43 term: term • MUL factor
+   44     | term • DIV factor
+   45     | term • MOD factor
+
+    MUL  shift, and go to state 95
+    DIV  shift, and go to state 96
+    MOD  shift, and go to state 97
+
+    $default  reduce using rule 42 (expression)
+
+
+State 66
+
+   46 term: factor •
+
+    $default  reduce using rule 46 (term)
+
+
+State 67
+
+   47 factor: primary •
+
+    $default  reduce using rule 47 (factor)
+
+
+State 68
+
+   56 primary: array_access •
+
+    $default  reduce using rule 56 (primary)
+
+
+State 69
+
+   55 primary: function_call •
+
+    $default  reduce using rule 55 (primary)
+
+
+State 70
+
+   64 print_stmt: PRINT LPAREN • STRING_LITERAL RPAREN SEMI
+   65           | PRINT LPAREN • IDENTIFIER RPAREN SEMI
+   66           | PRINT LPAREN • expression RPAREN SEMI
+
+    TRUE_LITERAL    shift, and go to state 51
+    FALSE_LITERAL   shift, and go to state 52
+    POW             shift, and go to state 53
+    SQRT            shift, and go to state 54
+    ABS             shift, and go to state 55
+    FLOOR           shift, and go to state 56
+    CEIL            shift, and go to state 57
+    MINUS           shift, and go to state 58
+    LPAREN          shift, and go to state 59
+    INT_LITERAL     shift, and go to state 60
+    FLOAT_LITERAL   shift, and go to state 61
+    STRING_LITERAL  shift, and go to state 98
+    CHAR_LITERAL    shift, and go to state 62
+    IDENTIFIER      shift, and go to state 99
+
+    expression     go to state 100
+    term           go to state 65
+    factor         go to state 66
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+
+
+State 71
+
+   67 scan_stmt: SCAN LPAREN • IDENTIFIER RPAREN SEMI
+   68          | SCAN LPAREN • IDENTIFIER LBRACKET expression RBRACKET RPAREN SEMI
+
+    IDENTIFIER  shift, and go to state 101
+
+
+State 72
+
+   36 assignment: IDENTIFIER ASSIGN • expression
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    MINUS          shift, and go to state 58
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    expression     go to state 102
+    term           go to state 65
+    factor         go to state 66
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+
+
+State 73
+
+   37 array_assignment: IDENTIFIER LBRACKET • expression RBRACKET ASSIGN expression
+   38                 | IDENTIFIER LBRACKET • expression RBRACKET LBRACKET expression RBRACKET ASSIGN expression
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    MINUS          shift, and go to state 58
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    expression     go to state 103
+    term           go to state 65
+    factor         go to state 66
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+
+
+State 74
+
+   20 declaration: type IDENTIFIER • LBRACKET array_size RBRACKET SEMI
+   21            | type IDENTIFIER • LBRACKET array_size RBRACKET LBRACKET array_size RBRACKET SEMI
+   32 identifier_list_decls: IDENTIFIER •
+   33                      | IDENTIFIER • ASSIGN expression
+   34                      | IDENTIFIER • COMMA identifier_list_decls
+   35                      | IDENTIFIER • ASSIGN expression COMMA identifier_list_decls
+
+    ASSIGN    shift, and go to state 104
+    COMMA     shift, and go to state 105
+    LBRACKET  shift, and go to state 106
+
+    $default  reduce using rule 32 (identifier_list_decls)
+
+
+State 75
+
+   19 declaration: type identifier_list_decls • SEMI
+
+    SEMI  shift, and go to state 107
+
+
+State 76
+
+   10 statement: assignment SEMI •
+
+    $default  reduce using rule 10 (statement)
+
+
+State 77
+
+   11 statement: array_assignment SEMI •
+
+    $default  reduce using rule 11 (statement)
+
+
+State 78
+
+   18 statement: return_stmt SEMI •
+
+    $default  reduce using rule 18 (statement)
+
+
+State 79
+
+   39 expression: expression • PLUS term
+   40           | expression • MINUS term
+   69 condition: expression • EQ expression
+   70          | expression • NEQ expression
+   71          | expression • GT expression
+   72          | expression • LT expression
+   73          | expression • GE expression
+   74          | expression • LE expression
+
+    EQ     shift, and go to state 108
+    NEQ    shift, and go to state 109
+    GE     shift, and go to state 110
+    LE     shift, and go to state 111
+    GT     shift, and go to state 112
+    LT     shift, and go to state 113
+    PLUS   shift, and go to state 93
+    MINUS  shift, and go to state 94
+
+
+State 80
+
+   75 if_stmt: IF LPAREN condition • RPAREN LBRACE statement_list RBRACE else_if_part
+
+    RPAREN  shift, and go to state 114
+
+
+State 81
+
+   39 expression: expression • PLUS term
+   40           | expression • MINUS term
+   79 switch_stmt: SWITCH LPAREN expression • RPAREN LBRACE case_list RBRACE
+
+    PLUS    shift, and go to state 93
+    MINUS   shift, and go to state 94
+    RPAREN  shift, and go to state 115
+
+
+State 82
+
+   36 assignment: IDENTIFIER • ASSIGN expression
+
+    ASSIGN  shift, and go to state 72
+
+
+State 83
+
+   89 loop_stmt: FOR LPAREN assignment • SEMI condition SEMI for_update RPAREN LBRACE statement_list RBRACE
+
+    SEMI  shift, and go to state 116
+
+
+State 84
+
+   88 loop_stmt: WHILE LPAREN condition • RPAREN LBRACE statement_list RBRACE
+
+    RPAREN  shift, and go to state 117
+
+
+State 85
+
+   59 function_call: POW LPAREN • expression COMMA expression RPAREN
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    MINUS          shift, and go to state 58
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    expression     go to state 118
+    term           go to state 65
+    factor         go to state 66
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+
+
+State 86
+
+   60 function_call: SQRT LPAREN • expression RPAREN
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    MINUS          shift, and go to state 58
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    expression     go to state 119
+    term           go to state 65
+    factor         go to state 66
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+
+
+State 87
+
+   61 function_call: ABS LPAREN • expression RPAREN
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    MINUS          shift, and go to state 58
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    expression     go to state 120
+    term           go to state 65
+    factor         go to state 66
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+
+
+State 88
+
+   62 function_call: FLOOR LPAREN • expression RPAREN
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    MINUS          shift, and go to state 58
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    expression     go to state 121
+    term           go to state 65
+    factor         go to state 66
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+
+
+State 89
+
+   63 function_call: CEIL LPAREN • expression RPAREN
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    MINUS          shift, and go to state 58
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    expression     go to state 122
+    term           go to state 65
+    factor         go to state 66
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+
+
+State 90
+
+   41 expression: MINUS term •
+   43 term: term • MUL factor
+   44     | term • DIV factor
+   45     | term • MOD factor
+
+    MUL  shift, and go to state 95
+    DIV  shift, and go to state 96
+    MOD  shift, and go to state 97
+
+    $default  reduce using rule 41 (expression)
+
+
+State 91
+
+   39 expression: expression • PLUS term
+   40           | expression • MINUS term
+   54 primary: LPAREN expression • RPAREN
+
+    PLUS    shift, and go to state 93
+    MINUS   shift, and go to state 94
+    RPAREN  shift, and go to state 123
+
+
+State 92
+
+   57 array_access: IDENTIFIER LBRACKET • expression RBRACKET
+   58             | IDENTIFIER LBRACKET • expression RBRACKET LBRACKET expression RBRACKET
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    MINUS          shift, and go to state 58
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    expression     go to state 124
+    term           go to state 65
+    factor         go to state 66
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+
+
+State 93
+
+   39 expression: expression PLUS • term
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    term           go to state 125
+    factor         go to state 66
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+
+
+State 94
+
+   40 expression: expression MINUS • term
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    term           go to state 126
+    factor         go to state 66
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+
+
+State 95
+
+   43 term: term MUL • factor
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    factor         go to state 127
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+
+
+State 96
+
+   44 term: term DIV • factor
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    factor         go to state 128
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+
+
+State 97
+
+   45 term: term MOD • factor
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    factor         go to state 129
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+
+
+State 98
+
+   64 print_stmt: PRINT LPAREN STRING_LITERAL • RPAREN SEMI
+
+    RPAREN  shift, and go to state 130
+
+
+State 99
+
+   48 primary: IDENTIFIER •
+   57 array_access: IDENTIFIER • LBRACKET expression RBRACKET
+   58             | IDENTIFIER • LBRACKET expression RBRACKET LBRACKET expression RBRACKET
+   65 print_stmt: PRINT LPAREN IDENTIFIER • RPAREN SEMI
+
+    RPAREN    shift, and go to state 131
+    LBRACKET  shift, and go to state 92
+
+    RPAREN    [reduce using rule 48 (primary)]
+    $default  reduce using rule 48 (primary)
+
+
+State 100
+
+   39 expression: expression • PLUS term
+   40           | expression • MINUS term
+   66 print_stmt: PRINT LPAREN expression • RPAREN SEMI
+
+    PLUS    shift, and go to state 93
+    MINUS   shift, and go to state 94
+    RPAREN  shift, and go to state 132
+
+
+State 101
+
+   67 scan_stmt: SCAN LPAREN IDENTIFIER • RPAREN SEMI
+   68          | SCAN LPAREN IDENTIFIER • LBRACKET expression RBRACKET RPAREN SEMI
+
+    RPAREN    shift, and go to state 133
+    LBRACKET  shift, and go to state 134
+
+
+State 102
+
+   36 assignment: IDENTIFIER ASSIGN expression •
+   39 expression: expression • PLUS term
+   40           | expression • MINUS term
+
+    PLUS   shift, and go to state 93
+    MINUS  shift, and go to state 94
+
+    $default  reduce using rule 36 (assignment)
+
+
+State 103
+
+   37 array_assignment: IDENTIFIER LBRACKET expression • RBRACKET ASSIGN expression
+   38                 | IDENTIFIER LBRACKET expression • RBRACKET LBRACKET expression RBRACKET ASSIGN expression
+   39 expression: expression • PLUS term
+   40           | expression • MINUS term
+
+    PLUS      shift, and go to state 93
+    MINUS     shift, and go to state 94
+    RBRACKET  shift, and go to state 135
+
+
+State 104
+
+   33 identifier_list_decls: IDENTIFIER ASSIGN • expression
+   35                      | IDENTIFIER ASSIGN • expression COMMA identifier_list_decls
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    MINUS          shift, and go to state 58
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    expression     go to state 136
+    term           go to state 65
+    factor         go to state 66
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+
+
+State 105
+
+   34 identifier_list_decls: IDENTIFIER COMMA • identifier_list_decls
+
+    IDENTIFIER  shift, and go to state 137
+
+    identifier_list_decls  go to state 138
+
+
+State 106
+
+   20 declaration: type IDENTIFIER LBRACKET • array_size RBRACKET SEMI
+   21            | type IDENTIFIER LBRACKET • array_size RBRACKET LBRACKET array_size RBRACKET SEMI
+
+    INT_LITERAL  shift, and go to state 139
+
+    array_size  go to state 140
+
+
+State 107
+
+   19 declaration: type identifier_list_decls SEMI •
+
+    $default  reduce using rule 19 (declaration)
+
+
+State 108
+
+   69 condition: expression EQ • expression
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    MINUS          shift, and go to state 58
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    expression     go to state 141
+    term           go to state 65
+    factor         go to state 66
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+
+
+State 109
+
+   70 condition: expression NEQ • expression
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    MINUS          shift, and go to state 58
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    expression     go to state 142
+    term           go to state 65
+    factor         go to state 66
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+
+
+State 110
+
+   73 condition: expression GE • expression
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    MINUS          shift, and go to state 58
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    expression     go to state 143
+    term           go to state 65
+    factor         go to state 66
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+
+
+State 111
+
+   74 condition: expression LE • expression
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    MINUS          shift, and go to state 58
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    expression     go to state 144
+    term           go to state 65
+    factor         go to state 66
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+
+
+State 112
+
+   71 condition: expression GT • expression
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    MINUS          shift, and go to state 58
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    expression     go to state 145
+    term           go to state 65
+    factor         go to state 66
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+
+
+State 113
+
+   72 condition: expression LT • expression
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    MINUS          shift, and go to state 58
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    expression     go to state 146
+    term           go to state 65
+    factor         go to state 66
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+
+
+State 114
+
+   75 if_stmt: IF LPAREN condition RPAREN • LBRACE statement_list RBRACE else_if_part
+
+    LBRACE  shift, and go to state 147
+
+
+State 115
+
+   79 switch_stmt: SWITCH LPAREN expression RPAREN • LBRACE case_list RBRACE
+
+    LBRACE  shift, and go to state 148
+
+
+State 116
+
+   89 loop_stmt: FOR LPAREN assignment SEMI • condition SEMI for_update RPAREN LBRACE statement_list RBRACE
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    MINUS          shift, and go to state 58
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    expression     go to state 79
+    term           go to state 65
+    factor         go to state 66
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+    condition      go to state 149
+
+
+State 117
+
+   88 loop_stmt: WHILE LPAREN condition RPAREN • LBRACE statement_list RBRACE
+
+    LBRACE  shift, and go to state 150
+
+
+State 118
+
+   39 expression: expression • PLUS term
+   40           | expression • MINUS term
+   59 function_call: POW LPAREN expression • COMMA expression RPAREN
+
+    PLUS   shift, and go to state 93
+    MINUS  shift, and go to state 94
+    COMMA  shift, and go to state 151
+
+
+State 119
+
+   39 expression: expression • PLUS term
+   40           | expression • MINUS term
+   60 function_call: SQRT LPAREN expression • RPAREN
+
+    PLUS    shift, and go to state 93
+    MINUS   shift, and go to state 94
+    RPAREN  shift, and go to state 152
+
+
+State 120
+
+   39 expression: expression • PLUS term
+   40           | expression • MINUS term
+   61 function_call: ABS LPAREN expression • RPAREN
+
+    PLUS    shift, and go to state 93
+    MINUS   shift, and go to state 94
+    RPAREN  shift, and go to state 153
+
+
+State 121
+
+   39 expression: expression • PLUS term
+   40           | expression • MINUS term
+   62 function_call: FLOOR LPAREN expression • RPAREN
+
+    PLUS    shift, and go to state 93
+    MINUS   shift, and go to state 94
+    RPAREN  shift, and go to state 154
+
+
+State 122
+
+   39 expression: expression • PLUS term
+   40           | expression • MINUS term
+   63 function_call: CEIL LPAREN expression • RPAREN
+
+    PLUS    shift, and go to state 93
+    MINUS   shift, and go to state 94
+    RPAREN  shift, and go to state 155
+
+
+State 123
+
+   54 primary: LPAREN expression RPAREN •
+
+    $default  reduce using rule 54 (primary)
+
+
+State 124
+
+   39 expression: expression • PLUS term
+   40           | expression • MINUS term
+   57 array_access: IDENTIFIER LBRACKET expression • RBRACKET
+   58             | IDENTIFIER LBRACKET expression • RBRACKET LBRACKET expression RBRACKET
+
+    PLUS      shift, and go to state 93
+    MINUS     shift, and go to state 94
+    RBRACKET  shift, and go to state 156
+
+
+State 125
+
+   39 expression: expression PLUS term •
+   43 term: term • MUL factor
+   44     | term • DIV factor
+   45     | term • MOD factor
+
+    MUL  shift, and go to state 95
+    DIV  shift, and go to state 96
+    MOD  shift, and go to state 97
+
+    $default  reduce using rule 39 (expression)
+
+
+State 126
+
+   40 expression: expression MINUS term •
+   43 term: term • MUL factor
+   44     | term • DIV factor
+   45     | term • MOD factor
+
+    MUL  shift, and go to state 95
+    DIV  shift, and go to state 96
+    MOD  shift, and go to state 97
+
+    $default  reduce using rule 40 (expression)
+
+
+State 127
+
+   43 term: term MUL factor •
+
+    $default  reduce using rule 43 (term)
+
+
+State 128
+
+   44 term: term DIV factor •
+
+    $default  reduce using rule 44 (term)
+
+
+State 129
+
+   45 term: term MOD factor •
+
+    $default  reduce using rule 45 (term)
+
+
+State 130
+
+   64 print_stmt: PRINT LPAREN STRING_LITERAL RPAREN • SEMI
+
+    SEMI  shift, and go to state 157
+
+
+State 131
+
+   65 print_stmt: PRINT LPAREN IDENTIFIER RPAREN • SEMI
+
+    SEMI  shift, and go to state 158
+
+
+State 132
+
+   66 print_stmt: PRINT LPAREN expression RPAREN • SEMI
+
+    SEMI  shift, and go to state 159
+
+
+State 133
+
+   67 scan_stmt: SCAN LPAREN IDENTIFIER RPAREN • SEMI
+
+    SEMI  shift, and go to state 160
+
+
+State 134
+
+   68 scan_stmt: SCAN LPAREN IDENTIFIER LBRACKET • expression RBRACKET RPAREN SEMI
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    MINUS          shift, and go to state 58
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    expression     go to state 161
+    term           go to state 65
+    factor         go to state 66
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+
+
+State 135
+
+   37 array_assignment: IDENTIFIER LBRACKET expression RBRACKET • ASSIGN expression
+   38                 | IDENTIFIER LBRACKET expression RBRACKET • LBRACKET expression RBRACKET ASSIGN expression
+
+    ASSIGN    shift, and go to state 162
+    LBRACKET  shift, and go to state 163
+
+
+State 136
+
+   33 identifier_list_decls: IDENTIFIER ASSIGN expression •
+   35                      | IDENTIFIER ASSIGN expression • COMMA identifier_list_decls
+   39 expression: expression • PLUS term
+   40           | expression • MINUS term
+
+    PLUS   shift, and go to state 93
+    MINUS  shift, and go to state 94
+    COMMA  shift, and go to state 164
+
+    $default  reduce using rule 33 (identifier_list_decls)
+
+
+State 137
+
+   32 identifier_list_decls: IDENTIFIER •
+   33                      | IDENTIFIER • ASSIGN expression
+   34                      | IDENTIFIER • COMMA identifier_list_decls
+   35                      | IDENTIFIER • ASSIGN expression COMMA identifier_list_decls
+
+    ASSIGN  shift, and go to state 104
+    COMMA   shift, and go to state 105
+
+    $default  reduce using rule 32 (identifier_list_decls)
+
+
+State 138
+
+   34 identifier_list_decls: IDENTIFIER COMMA identifier_list_decls •
+
+    $default  reduce using rule 34 (identifier_list_decls)
+
+
+State 139
+
+   22 array_size: INT_LITERAL •
+
+    $default  reduce using rule 22 (array_size)
+
+
+State 140
+
+   20 declaration: type IDENTIFIER LBRACKET array_size • RBRACKET SEMI
+   21            | type IDENTIFIER LBRACKET array_size • RBRACKET LBRACKET array_size RBRACKET SEMI
+
+    RBRACKET  shift, and go to state 165
+
+
+State 141
+
+   39 expression: expression • PLUS term
+   40           | expression • MINUS term
+   69 condition: expression EQ expression •
+
+    PLUS   shift, and go to state 93
+    MINUS  shift, and go to state 94
+
+    $default  reduce using rule 69 (condition)
+
+
+State 142
+
+   39 expression: expression • PLUS term
+   40           | expression • MINUS term
+   70 condition: expression NEQ expression •
+
+    PLUS   shift, and go to state 93
+    MINUS  shift, and go to state 94
+
+    $default  reduce using rule 70 (condition)
+
+
+State 143
+
+   39 expression: expression • PLUS term
+   40           | expression • MINUS term
+   73 condition: expression GE expression •
+
+    PLUS   shift, and go to state 93
+    MINUS  shift, and go to state 94
+
+    $default  reduce using rule 73 (condition)
+
+
+State 144
+
+   39 expression: expression • PLUS term
+   40           | expression • MINUS term
+   74 condition: expression LE expression •
+
+    PLUS   shift, and go to state 93
+    MINUS  shift, and go to state 94
+
+    $default  reduce using rule 74 (condition)
+
+
+State 145
+
+   39 expression: expression • PLUS term
+   40           | expression • MINUS term
+   71 condition: expression GT expression •
+
+    PLUS   shift, and go to state 93
+    MINUS  shift, and go to state 94
+
+    $default  reduce using rule 71 (condition)
+
+
+State 146
+
+   39 expression: expression • PLUS term
+   40           | expression • MINUS term
+   72 condition: expression LT expression •
+
+    PLUS   shift, and go to state 93
+    MINUS  shift, and go to state 94
+
+    $default  reduce using rule 72 (condition)
+
+
+State 147
+
+   75 if_stmt: IF LPAREN condition RPAREN LBRACE • statement_list RBRACE else_if_part
+
+    $default  reduce using rule 8 (statement_list)
+
+    statement_list  go to state 166
+
+
+State 148
+
+   79 switch_stmt: SWITCH LPAREN expression RPAREN LBRACE • case_list RBRACE
+
+    $default  reduce using rule 82 (case_list)
+
+    case_list  go to state 167
+
+
+State 149
+
+   89 loop_stmt: FOR LPAREN assignment SEMI condition • SEMI for_update RPAREN LBRACE statement_list RBRACE
+
+    SEMI  shift, and go to state 168
+
+
+State 150
+
+   88 loop_stmt: WHILE LPAREN condition RPAREN LBRACE • statement_list RBRACE
+
+    $default  reduce using rule 8 (statement_list)
+
+    statement_list  go to state 169
+
+
+State 151
+
+   59 function_call: POW LPAREN expression COMMA • expression RPAREN
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    MINUS          shift, and go to state 58
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    expression     go to state 170
+    term           go to state 65
+    factor         go to state 66
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+
+
+State 152
+
+   60 function_call: SQRT LPAREN expression RPAREN •
+
+    $default  reduce using rule 60 (function_call)
+
+
+State 153
+
+   61 function_call: ABS LPAREN expression RPAREN •
+
+    $default  reduce using rule 61 (function_call)
+
+
+State 154
+
+   62 function_call: FLOOR LPAREN expression RPAREN •
+
+    $default  reduce using rule 62 (function_call)
+
+
+State 155
+
+   63 function_call: CEIL LPAREN expression RPAREN •
+
+    $default  reduce using rule 63 (function_call)
+
+
+State 156
+
+   57 array_access: IDENTIFIER LBRACKET expression RBRACKET •
+   58             | IDENTIFIER LBRACKET expression RBRACKET • LBRACKET expression RBRACKET
+
+    LBRACKET  shift, and go to state 171
+
+    $default  reduce using rule 57 (array_access)
+
+
+State 157
+
+   64 print_stmt: PRINT LPAREN STRING_LITERAL RPAREN SEMI •
+
+    $default  reduce using rule 64 (print_stmt)
+
+
+State 158
+
+   65 print_stmt: PRINT LPAREN IDENTIFIER RPAREN SEMI •
+
+    $default  reduce using rule 65 (print_stmt)
+
+
+State 159
+
+   66 print_stmt: PRINT LPAREN expression RPAREN SEMI •
+
+    $default  reduce using rule 66 (print_stmt)
+
+
+State 160
+
+   67 scan_stmt: SCAN LPAREN IDENTIFIER RPAREN SEMI •
+
+    $default  reduce using rule 67 (scan_stmt)
+
+
+State 161
+
+   39 expression: expression • PLUS term
+   40           | expression • MINUS term
+   68 scan_stmt: SCAN LPAREN IDENTIFIER LBRACKET expression • RBRACKET RPAREN SEMI
+
+    PLUS      shift, and go to state 93
+    MINUS     shift, and go to state 94
+    RBRACKET  shift, and go to state 172
+
+
+State 162
+
+   37 array_assignment: IDENTIFIER LBRACKET expression RBRACKET ASSIGN • expression
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    MINUS          shift, and go to state 58
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    expression     go to state 173
+    term           go to state 65
+    factor         go to state 66
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+
+
+State 163
+
+   38 array_assignment: IDENTIFIER LBRACKET expression RBRACKET LBRACKET • expression RBRACKET ASSIGN expression
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    MINUS          shift, and go to state 58
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    expression     go to state 174
+    term           go to state 65
+    factor         go to state 66
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+
+
+State 164
+
+   35 identifier_list_decls: IDENTIFIER ASSIGN expression COMMA • identifier_list_decls
+
+    IDENTIFIER  shift, and go to state 137
+
+    identifier_list_decls  go to state 175
+
+
+State 165
+
+   20 declaration: type IDENTIFIER LBRACKET array_size RBRACKET • SEMI
+   21            | type IDENTIFIER LBRACKET array_size RBRACKET • LBRACKET array_size RBRACKET SEMI
+
+    SEMI      shift, and go to state 176
+    LBRACKET  shift, and go to state 177
+
+
+State 166
+
+    7 statement_list: statement_list • statement
+   75 if_stmt: IF LPAREN condition RPAREN LBRACE statement_list • RBRACE else_if_part
+
+    INT_TYPE       shift, and go to state 16
+    FLOAT_TYPE     shift, and go to state 17
+    DOUBLE_TYPE    shift, and go to state 18
+    CHAR_TYPE      shift, and go to state 19
+    BOOL_TYPE      shift, and go to state 20
+    VOID_TYPE      shift, and go to state 21
+    LONG_TYPE      shift, and go to state 22
+    SHORT_TYPE     shift, and go to state 23
+    UNSIGNED_TYPE  shift, and go to state 24
+    IF             shift, and go to state 25
+    SWITCH         shift, and go to state 26
+    FOR            shift, and go to state 27
+    WHILE          shift, and go to state 28
+    BREAK          shift, and go to state 29
+    RETURN         shift, and go to state 30
+    PRINT          shift, and go to state 31
+    SCAN           shift, and go to state 32
+    RBRACE         shift, and go to state 178
+    IDENTIFIER     shift, and go to state 34
+
+    statement         go to state 35
+    declaration       go to state 36
+    type              go to state 37
+    assignment        go to state 38
+    array_assignment  go to state 39
+    print_stmt        go to state 40
+    scan_stmt         go to state 41
+    if_stmt           go to state 42
+    switch_stmt       go to state 43
+    loop_stmt         go to state 44
+    return_stmt       go to state 45
+
+
+State 167
+
+   79 switch_stmt: SWITCH LPAREN expression RPAREN LBRACE case_list • RBRACE
+   80 case_list: case_list • case_item
+   81          | case_list • default_item
+
+    CASE     shift, and go to state 179
+    DEFAULT  shift, and go to state 180
+    RBRACE   shift, and go to state 181
+
+    case_item     go to state 182
+    default_item  go to state 183
+
+
+State 168
+
+   89 loop_stmt: FOR LPAREN assignment SEMI condition SEMI • for_update RPAREN LBRACE statement_list RBRACE
+
+    IDENTIFIER  shift, and go to state 82
+
+    assignment  go to state 184
+    for_update  go to state 185
+
+
+State 169
+
+    7 statement_list: statement_list • statement
+   88 loop_stmt: WHILE LPAREN condition RPAREN LBRACE statement_list • RBRACE
+
+    INT_TYPE       shift, and go to state 16
+    FLOAT_TYPE     shift, and go to state 17
+    DOUBLE_TYPE    shift, and go to state 18
+    CHAR_TYPE      shift, and go to state 19
+    BOOL_TYPE      shift, and go to state 20
+    VOID_TYPE      shift, and go to state 21
+    LONG_TYPE      shift, and go to state 22
+    SHORT_TYPE     shift, and go to state 23
+    UNSIGNED_TYPE  shift, and go to state 24
+    IF             shift, and go to state 25
+    SWITCH         shift, and go to state 26
+    FOR            shift, and go to state 27
+    WHILE          shift, and go to state 28
+    BREAK          shift, and go to state 29
+    RETURN         shift, and go to state 30
+    PRINT          shift, and go to state 31
+    SCAN           shift, and go to state 32
+    RBRACE         shift, and go to state 186
+    IDENTIFIER     shift, and go to state 34
+
+    statement         go to state 35
+    declaration       go to state 36
+    type              go to state 37
+    assignment        go to state 38
+    array_assignment  go to state 39
+    print_stmt        go to state 40
+    scan_stmt         go to state 41
+    if_stmt           go to state 42
+    switch_stmt       go to state 43
+    loop_stmt         go to state 44
+    return_stmt       go to state 45
+
+
+State 170
+
+   39 expression: expression • PLUS term
+   40           | expression • MINUS term
+   59 function_call: POW LPAREN expression COMMA expression • RPAREN
+
+    PLUS    shift, and go to state 93
+    MINUS   shift, and go to state 94
+    RPAREN  shift, and go to state 187
+
+
+State 171
+
+   58 array_access: IDENTIFIER LBRACKET expression RBRACKET LBRACKET • expression RBRACKET
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    MINUS          shift, and go to state 58
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    expression     go to state 188
+    term           go to state 65
+    factor         go to state 66
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+
+
+State 172
+
+   68 scan_stmt: SCAN LPAREN IDENTIFIER LBRACKET expression RBRACKET • RPAREN SEMI
+
+    RPAREN  shift, and go to state 189
+
+
+State 173
+
+   37 array_assignment: IDENTIFIER LBRACKET expression RBRACKET ASSIGN expression •
+   39 expression: expression • PLUS term
+   40           | expression • MINUS term
+
+    PLUS   shift, and go to state 93
+    MINUS  shift, and go to state 94
+
+    $default  reduce using rule 37 (array_assignment)
+
+
+State 174
+
+   38 array_assignment: IDENTIFIER LBRACKET expression RBRACKET LBRACKET expression • RBRACKET ASSIGN expression
+   39 expression: expression • PLUS term
+   40           | expression • MINUS term
+
+    PLUS      shift, and go to state 93
+    MINUS     shift, and go to state 94
+    RBRACKET  shift, and go to state 190
+
+
+State 175
+
+   35 identifier_list_decls: IDENTIFIER ASSIGN expression COMMA identifier_list_decls •
+
+    $default  reduce using rule 35 (identifier_list_decls)
+
+
+State 176
+
+   20 declaration: type IDENTIFIER LBRACKET array_size RBRACKET SEMI •
+
+    $default  reduce using rule 20 (declaration)
+
+
+State 177
+
+   21 declaration: type IDENTIFIER LBRACKET array_size RBRACKET LBRACKET • array_size RBRACKET SEMI
+
+    INT_LITERAL  shift, and go to state 139
+
+    array_size  go to state 191
+
+
+State 178
+
+   75 if_stmt: IF LPAREN condition RPAREN LBRACE statement_list RBRACE • else_if_part
+
+    ELSE    shift, and go to state 192
+    ELSEIF  shift, and go to state 193
+
+    $default  reduce using rule 78 (else_if_part)
+
+    else_if_part  go to state 194
+
+
+State 179
+
+   83 case_item: CASE • case_expr COLON statement_list
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    MINUS          shift, and go to state 58
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    expression     go to state 195
+    term           go to state 65
+    factor         go to state 66
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+    case_expr      go to state 196
+
+
+State 180
+
+   86 default_item: DEFAULT • COLON statement_list
+
+    COLON  shift, and go to state 197
+
+
+State 181
+
+   79 switch_stmt: SWITCH LPAREN expression RPAREN LBRACE case_list RBRACE •
+
+    $default  reduce using rule 79 (switch_stmt)
+
+
+State 182
+
+   80 case_list: case_list case_item •
+
+    $default  reduce using rule 80 (case_list)
+
+
+State 183
+
+   81 case_list: case_list default_item •
+
+    $default  reduce using rule 81 (case_list)
+
+
+State 184
+
+   87 for_update: assignment •
+
+    $default  reduce using rule 87 (for_update)
+
+
+State 185
+
+   89 loop_stmt: FOR LPAREN assignment SEMI condition SEMI for_update • RPAREN LBRACE statement_list RBRACE
+
+    RPAREN  shift, and go to state 198
+
+
+State 186
+
+   88 loop_stmt: WHILE LPAREN condition RPAREN LBRACE statement_list RBRACE •
+
+    $default  reduce using rule 88 (loop_stmt)
+
+
+State 187
+
+   59 function_call: POW LPAREN expression COMMA expression RPAREN •
+
+    $default  reduce using rule 59 (function_call)
+
+
+State 188
+
+   39 expression: expression • PLUS term
+   40           | expression • MINUS term
+   58 array_access: IDENTIFIER LBRACKET expression RBRACKET LBRACKET expression • RBRACKET
+
+    PLUS      shift, and go to state 93
+    MINUS     shift, and go to state 94
+    RBRACKET  shift, and go to state 199
+
+
+State 189
+
+   68 scan_stmt: SCAN LPAREN IDENTIFIER LBRACKET expression RBRACKET RPAREN • SEMI
+
+    SEMI  shift, and go to state 200
+
+
+State 190
+
+   38 array_assignment: IDENTIFIER LBRACKET expression RBRACKET LBRACKET expression RBRACKET • ASSIGN expression
+
+    ASSIGN  shift, and go to state 201
+
+
+State 191
+
+   21 declaration: type IDENTIFIER LBRACKET array_size RBRACKET LBRACKET array_size • RBRACKET SEMI
+
+    RBRACKET  shift, and go to state 202
+
+
+State 192
+
+   77 else_if_part: ELSE • LBRACE statement_list RBRACE
+
+    LBRACE  shift, and go to state 203
+
+
+State 193
+
+   76 else_if_part: ELSEIF • LPAREN condition RPAREN LBRACE statement_list RBRACE else_if_part
+
+    LPAREN  shift, and go to state 204
+
+
+State 194
+
+   75 if_stmt: IF LPAREN condition RPAREN LBRACE statement_list RBRACE else_if_part •
+
+    $default  reduce using rule 75 (if_stmt)
+
+
+State 195
+
+   39 expression: expression • PLUS term
+   40           | expression • MINUS term
+   84 case_expr: expression •
+   85          | expression • RANGE expression
+
+    PLUS   shift, and go to state 93
+    MINUS  shift, and go to state 94
+    RANGE  shift, and go to state 205
+
+    $default  reduce using rule 84 (case_expr)
+
+
+State 196
+
+   83 case_item: CASE case_expr • COLON statement_list
+
+    COLON  shift, and go to state 206
+
+
+State 197
+
+   86 default_item: DEFAULT COLON • statement_list
+
+    $default  reduce using rule 8 (statement_list)
+
+    statement_list  go to state 207
+
+
+State 198
+
+   89 loop_stmt: FOR LPAREN assignment SEMI condition SEMI for_update RPAREN • LBRACE statement_list RBRACE
+
+    LBRACE  shift, and go to state 208
+
+
+State 199
+
+   58 array_access: IDENTIFIER LBRACKET expression RBRACKET LBRACKET expression RBRACKET •
+
+    $default  reduce using rule 58 (array_access)
+
+
+State 200
+
+   68 scan_stmt: SCAN LPAREN IDENTIFIER LBRACKET expression RBRACKET RPAREN SEMI •
+
+    $default  reduce using rule 68 (scan_stmt)
+
+
+State 201
+
+   38 array_assignment: IDENTIFIER LBRACKET expression RBRACKET LBRACKET expression RBRACKET ASSIGN • expression
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    MINUS          shift, and go to state 58
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    expression     go to state 209
+    term           go to state 65
+    factor         go to state 66
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+
+
+State 202
+
+   21 declaration: type IDENTIFIER LBRACKET array_size RBRACKET LBRACKET array_size RBRACKET • SEMI
+
+    SEMI  shift, and go to state 210
+
+
+State 203
+
+   77 else_if_part: ELSE LBRACE • statement_list RBRACE
+
+    $default  reduce using rule 8 (statement_list)
+
+    statement_list  go to state 211
+
+
+State 204
+
+   76 else_if_part: ELSEIF LPAREN • condition RPAREN LBRACE statement_list RBRACE else_if_part
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    MINUS          shift, and go to state 58
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    expression     go to state 79
+    term           go to state 65
+    factor         go to state 66
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+    condition      go to state 212
+
+
+State 205
+
+   85 case_expr: expression RANGE • expression
+
+    TRUE_LITERAL   shift, and go to state 51
+    FALSE_LITERAL  shift, and go to state 52
+    POW            shift, and go to state 53
+    SQRT           shift, and go to state 54
+    ABS            shift, and go to state 55
+    FLOOR          shift, and go to state 56
+    CEIL           shift, and go to state 57
+    MINUS          shift, and go to state 58
+    LPAREN         shift, and go to state 59
+    INT_LITERAL    shift, and go to state 60
+    FLOAT_LITERAL  shift, and go to state 61
+    CHAR_LITERAL   shift, and go to state 62
+    IDENTIFIER     shift, and go to state 63
+
+    expression     go to state 213
+    term           go to state 65
+    factor         go to state 66
+    primary        go to state 67
+    array_access   go to state 68
+    function_call  go to state 69
+
+
+State 206
+
+   83 case_item: CASE case_expr COLON • statement_list
+
+    $default  reduce using rule 8 (statement_list)
+
+    statement_list  go to state 214
+
+
+State 207
+
+    7 statement_list: statement_list • statement
+   86 default_item: DEFAULT COLON statement_list •
+
+    INT_TYPE       shift, and go to state 16
+    FLOAT_TYPE     shift, and go to state 17
+    DOUBLE_TYPE    shift, and go to state 18
+    CHAR_TYPE      shift, and go to state 19
+    BOOL_TYPE      shift, and go to state 20
+    VOID_TYPE      shift, and go to state 21
+    LONG_TYPE      shift, and go to state 22
+    SHORT_TYPE     shift, and go to state 23
+    UNSIGNED_TYPE  shift, and go to state 24
+    IF             shift, and go to state 25
+    SWITCH         shift, and go to state 26
+    FOR            shift, and go to state 27
+    WHILE          shift, and go to state 28
+    BREAK          shift, and go to state 29
+    RETURN         shift, and go to state 30
+    PRINT          shift, and go to state 31
+    SCAN           shift, and go to state 32
+    IDENTIFIER     shift, and go to state 34
+
+    $default  reduce using rule 86 (default_item)
+
+    statement         go to state 35
+    declaration       go to state 36
+    type              go to state 37
+    assignment        go to state 38
+    array_assignment  go to state 39
+    print_stmt        go to state 40
+    scan_stmt         go to state 41
+    if_stmt           go to state 42
+    switch_stmt       go to state 43
+    loop_stmt         go to state 44
+    return_stmt       go to state 45
+
+
+State 208
+
+   89 loop_stmt: FOR LPAREN assignment SEMI condition SEMI for_update RPAREN LBRACE • statement_list RBRACE
+
+    $default  reduce using rule 8 (statement_list)
+
+    statement_list  go to state 215
+
+
+State 209
+
+   38 array_assignment: IDENTIFIER LBRACKET expression RBRACKET LBRACKET expression RBRACKET ASSIGN expression •
+   39 expression: expression • PLUS term
+   40           | expression • MINUS term
+
+    PLUS   shift, and go to state 93
+    MINUS  shift, and go to state 94
+
+    $default  reduce using rule 38 (array_assignment)
+
+
+State 210
+
+   21 declaration: type IDENTIFIER LBRACKET array_size RBRACKET LBRACKET array_size RBRACKET SEMI •
+
+    $default  reduce using rule 21 (declaration)
+
+
+State 211
+
+    7 statement_list: statement_list • statement
+   77 else_if_part: ELSE LBRACE statement_list • RBRACE
+
+    INT_TYPE       shift, and go to state 16
+    FLOAT_TYPE     shift, and go to state 17
+    DOUBLE_TYPE    shift, and go to state 18
+    CHAR_TYPE      shift, and go to state 19
+    BOOL_TYPE      shift, and go to state 20
+    VOID_TYPE      shift, and go to state 21
+    LONG_TYPE      shift, and go to state 22
+    SHORT_TYPE     shift, and go to state 23
+    UNSIGNED_TYPE  shift, and go to state 24
+    IF             shift, and go to state 25
+    SWITCH         shift, and go to state 26
+    FOR            shift, and go to state 27
+    WHILE          shift, and go to state 28
+    BREAK          shift, and go to state 29
+    RETURN         shift, and go to state 30
+    PRINT          shift, and go to state 31
+    SCAN           shift, and go to state 32
+    RBRACE         shift, and go to state 216
+    IDENTIFIER     shift, and go to state 34
+
+    statement         go to state 35
+    declaration       go to state 36
+    type              go to state 37
+    assignment        go to state 38
+    array_assignment  go to state 39
+    print_stmt        go to state 40
+    scan_stmt         go to state 41
+    if_stmt           go to state 42
+    switch_stmt       go to state 43
+    loop_stmt         go to state 44
+    return_stmt       go to state 45
+
+
+State 212
+
+   76 else_if_part: ELSEIF LPAREN condition • RPAREN LBRACE statement_list RBRACE else_if_part
+
+    RPAREN  shift, and go to state 217
+
+
+State 213
+
+   39 expression: expression • PLUS term
+   40           | expression • MINUS term
+   85 case_expr: expression RANGE expression •
+
+    PLUS   shift, and go to state 93
+    MINUS  shift, and go to state 94
+
+    $default  reduce using rule 85 (case_expr)
+
+
+State 214
+
+    7 statement_list: statement_list • statement
+   83 case_item: CASE case_expr COLON statement_list •
+
+    INT_TYPE       shift, and go to state 16
+    FLOAT_TYPE     shift, and go to state 17
+    DOUBLE_TYPE    shift, and go to state 18
+    CHAR_TYPE      shift, and go to state 19
+    BOOL_TYPE      shift, and go to state 20
+    VOID_TYPE      shift, and go to state 21
+    LONG_TYPE      shift, and go to state 22
+    SHORT_TYPE     shift, and go to state 23
+    UNSIGNED_TYPE  shift, and go to state 24
+    IF             shift, and go to state 25
+    SWITCH         shift, and go to state 26
+    FOR            shift, and go to state 27
+    WHILE          shift, and go to state 28
+    BREAK          shift, and go to state 29
+    RETURN         shift, and go to state 30
+    PRINT          shift, and go to state 31
+    SCAN           shift, and go to state 32
+    IDENTIFIER     shift, and go to state 34
+
+    $default  reduce using rule 83 (case_item)
+
+    statement         go to state 35
+    declaration       go to state 36
+    type              go to state 37
+    assignment        go to state 38
+    array_assignment  go to state 39
+    print_stmt        go to state 40
+    scan_stmt         go to state 41
+    if_stmt           go to state 42
+    switch_stmt       go to state 43
+    loop_stmt         go to state 44
+    return_stmt       go to state 45
+
+
+State 215
+
+    7 statement_list: statement_list • statement
+   89 loop_stmt: FOR LPAREN assignment SEMI condition SEMI for_update RPAREN LBRACE statement_list • RBRACE
+
+    INT_TYPE       shift, and go to state 16
+    FLOAT_TYPE     shift, and go to state 17
+    DOUBLE_TYPE    shift, and go to state 18
+    CHAR_TYPE      shift, and go to state 19
+    BOOL_TYPE      shift, and go to state 20
+    VOID_TYPE      shift, and go to state 21
+    LONG_TYPE      shift, and go to state 22
+    SHORT_TYPE     shift, and go to state 23
+    UNSIGNED_TYPE  shift, and go to state 24
+    IF             shift, and go to state 25
+    SWITCH         shift, and go to state 26
+    FOR            shift, and go to state 27
+    WHILE          shift, and go to state 28
+    BREAK          shift, and go to state 29
+    RETURN         shift, and go to state 30
+    PRINT          shift, and go to state 31
+    SCAN           shift, and go to state 32
+    RBRACE         shift, and go to state 218
+    IDENTIFIER     shift, and go to state 34
+
+    statement         go to state 35
+    declaration       go to state 36
+    type              go to state 37
+    assignment        go to state 38
+    array_assignment  go to state 39
+    print_stmt        go to state 40
+    scan_stmt         go to state 41
+    if_stmt           go to state 42
+    switch_stmt       go to state 43
+    loop_stmt         go to state 44
+    return_stmt       go to state 45
+
+
+State 216
+
+   77 else_if_part: ELSE LBRACE statement_list RBRACE •
+
+    $default  reduce using rule 77 (else_if_part)
+
+
+State 217
+
+   76 else_if_part: ELSEIF LPAREN condition RPAREN • LBRACE statement_list RBRACE else_if_part
+
+    LBRACE  shift, and go to state 219
+
+
+State 218
+
+   89 loop_stmt: FOR LPAREN assignment SEMI condition SEMI for_update RPAREN LBRACE statement_list RBRACE •
+
+    $default  reduce using rule 89 (loop_stmt)
+
+
+State 219
+
+   76 else_if_part: ELSEIF LPAREN condition RPAREN LBRACE • statement_list RBRACE else_if_part
+
+    $default  reduce using rule 8 (statement_list)
+
+    statement_list  go to state 220
+
+
+State 220
+
+    7 statement_list: statement_list • statement
+   76 else_if_part: ELSEIF LPAREN condition RPAREN LBRACE statement_list • RBRACE else_if_part
+
+    INT_TYPE       shift, and go to state 16
+    FLOAT_TYPE     shift, and go to state 17
+    DOUBLE_TYPE    shift, and go to state 18
+    CHAR_TYPE      shift, and go to state 19
+    BOOL_TYPE      shift, and go to state 20
+    VOID_TYPE      shift, and go to state 21
+    LONG_TYPE      shift, and go to state 22
+    SHORT_TYPE     shift, and go to state 23
+    UNSIGNED_TYPE  shift, and go to state 24
+    IF             shift, and go to state 25
+    SWITCH         shift, and go to state 26
+    FOR            shift, and go to state 27
+    WHILE          shift, and go to state 28
+    BREAK          shift, and go to state 29
+    RETURN         shift, and go to state 30
+    PRINT          shift, and go to state 31
+    SCAN           shift, and go to state 32
+    RBRACE         shift, and go to state 221
+    IDENTIFIER     shift, and go to state 34
+
+    statement         go to state 35
+    declaration       go to state 36
+    type              go to state 37
+    assignment        go to state 38
+    array_assignment  go to state 39
+    print_stmt        go to state 40
+    scan_stmt         go to state 41
+    if_stmt           go to state 42
+    switch_stmt       go to state 43
+    loop_stmt         go to state 44
+    return_stmt       go to state 45
+
+
+State 221
+
+   76 else_if_part: ELSEIF LPAREN condition RPAREN LBRACE statement_list RBRACE • else_if_part
+
+    ELSE    shift, and go to state 192
+    ELSEIF  shift, and go to state 193
+
+    $default  reduce using rule 78 (else_if_part)
+
+    else_if_part  go to state 222
+
+
+State 222
+
+   76 else_if_part: ELSEIF LPAREN condition RPAREN LBRACE statement_list RBRACE else_if_part •
+
+    $default  reduce using rule 76 (else_if_part)
