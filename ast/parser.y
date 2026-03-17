@@ -66,13 +66,13 @@ static int current_decl_type = 0;   /* 0 = numeric, 1 = char */
 %type <node> expression term factor primary condition
 %type <node> function_call array_access
 %type <node> statement statement_list
-%type <node> declaration assignment array_assignment
+%type <node> declaration declaration_no_semi assignment array_assignment
 %type <node> print_stmt scan_stmt
 %type <node> if_stmt else_if_part
 %type <node> switch_stmt case_list case_item case_expr default_item
 %type <node> loop_stmt return_stmt
 %type <node> identifier_list_decls
-%type <node> for_update
+%type <node> for_init for_update
 
 %type <ival> array_size
 
@@ -154,6 +154,10 @@ statement
         {
             $$ = make_node(NODE_BREAK);
         }
+    | CONTINUE SEMI
+        {
+            $$ = make_node(NODE_CONTINUE);
+        }
     | loop_stmt            { $$ = $1; }
     | return_stmt SEMI     { $$ = $1; }
     ;
@@ -179,6 +183,26 @@ declaration
             n->sval      = strdup($2);
             n->rows      = $4;
             n->cols      = $7;
+            n->decl_type = current_decl_type;
+            $$ = n;
+        }
+    ;
+
+/* for loop declarations (without trailing semicolon) */
+declaration_no_semi
+    : type IDENTIFIER
+        {
+            ASTNode *n = make_node(NODE_DECL);
+            n->sval      = strdup($2);
+            n->left      = NULL;
+            n->decl_type = current_decl_type;
+            $$ = n;
+        }
+    | type IDENTIFIER ASSIGN expression
+        {
+            ASTNode *n = make_node(NODE_DECL);
+            n->sval      = strdup($2);
+            n->left      = $4;
             n->decl_type = current_decl_type;
             $$ = n;
         }
@@ -531,7 +555,7 @@ default_item
  *   right = body
  *
  * NODE_FOR
- *   left  = init (assignment node)
+ *   left  = init (assignment or declaration node)
  *   right = body
  *   extra = NODE_FOR_PARTS
  *              left  = condition
@@ -540,8 +564,15 @@ default_item
  * We reuse NODE_STMT_LIST as a container for the for-parts.
  */
 
+for_init
+    : assignment { $$ = $1; }
+    | declaration_no_semi { $$ = $1; }
+    | /* empty */ { $$ = NULL; }
+    ;
+
 for_update
     : assignment { $$ = $1; }
+    | /* empty */ { $$ = NULL; }
     ;
 
 loop_stmt
@@ -552,7 +583,14 @@ loop_stmt
             n->right = $6;   /* body      */
             $$ = n;
         }
-    | FOR LPAREN assignment SEMI condition SEMI for_update RPAREN
+     | DO LBRACE statement_list RBRACE WHILE LPAREN condition RPAREN SEMI
+        {
+            ASTNode *n = make_node(NODE_DO_WHILE);
+            n->left  = $3;   /* body      */
+            n->right = $7;   /* condition */
+            $$ = n;
+        }
+    | FOR LPAREN for_init SEMI condition SEMI for_update RPAREN
       LBRACE statement_list RBRACE
         {
             /* pack condition + update into a helper node */

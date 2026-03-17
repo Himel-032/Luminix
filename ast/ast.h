@@ -65,9 +65,11 @@ typedef enum {
     NODE_CASE_RANGE,
     NODE_DEFAULT,
     NODE_BREAK,
+    NODE_CONTINUE,
 
     /* loops */
     NODE_WHILE,
+    NODE_DO_WHILE,
     NODE_FOR,
 
     /* program */

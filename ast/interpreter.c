@@ -14,8 +14,12 @@
 /* Control-flow signals (propagated up the call stack)                */
 /* ------------------------------------------------------------------ */
 static int g_break    = 0;   /* set when BREAK is hit   */
+static int g_continue = 0;
 static int g_return   = 0;   /* set when RETURN is hit  */
 static double g_retval = 0;  /* value from RETURN       */
+
+/* True when any signal should stop the current statement sequence */
+#define SIGNAL_ACTIVE() (g_break || g_continue || g_return)
 
 /* ================================================================== */
 /*  eval_expr  –  evaluate an expression node, return double          */
@@ -147,43 +151,80 @@ static void exec_if(ASTNode *n, int already_matched) {
  * NODE_DEFAULT
  *   left  = body
  */
+// static void exec_switch(ASTNode *n) {
+//     double val  = eval_expr(n->left);
+//     int matched = 0;
+
+//     ASTNode *clause = n->right;
+//     while (clause) {
+//         if (g_break) { g_break = 0; break; }
+
+//         if (clause->type == NODE_CASE) {
+//             double case_val = eval_expr(clause->left);
+//             if (!matched && fabs(val - case_val) < 1e-9) matched = 1;
+//             if (matched) {
+//                 exec_stmt(clause->right);
+//                 if (g_break) { g_break = 0; break; }
+//             }
+
+//         } else if (clause->type == NODE_CASE_RANGE) {
+//             int start = (int)eval_expr(clause->left);
+//             int end   = (int)eval_expr(clause->right);
+//             int ival  = (int)val;
+//             if (!matched && ival >= start && ival <= end) matched = 1;
+//             if (matched) {
+//                 exec_stmt(clause->extra);
+//                 if (g_break) { g_break = 0; break; }
+//             }
+
+//         } else if (clause->type == NODE_DEFAULT) {
+//             if (!matched) matched = 1;
+//             if (matched) {
+//                 exec_stmt(clause->left);
+//                 if (g_break) { g_break = 0; break; }
+//             }
+//         }
+
+//         clause = clause->next;
+//     }
+//     g_break = 0; /* consume any leftover break */
+// }
 static void exec_switch(ASTNode *n) {
     double val  = eval_expr(n->left);
     int matched = 0;
 
     ASTNode *clause = n->right;
     while (clause) {
-        if (g_break) { g_break = 0; break; }
+        /*
+         * break    → consumed here (exits the switch, not an outer loop)
+         * continue → NOT consumed here; exits the switch so the
+         *            enclosing loop can see and handle it
+         * return   → not consumed; bubbles up normally
+         */
+        if (g_break)    { g_break = 0; break; }
+        if (g_continue) break;
+        if (g_return)   break;
 
         if (clause->type == NODE_CASE) {
             double case_val = eval_expr(clause->left);
             if (!matched && fabs(val - case_val) < 1e-9) matched = 1;
-            if (matched) {
-                exec_stmt(clause->right);
-                if (g_break) { g_break = 0; break; }
-            }
+            if (matched) exec_stmt(clause->right);
 
         } else if (clause->type == NODE_CASE_RANGE) {
             int start = (int)eval_expr(clause->left);
             int end   = (int)eval_expr(clause->right);
             int ival  = (int)val;
             if (!matched && ival >= start && ival <= end) matched = 1;
-            if (matched) {
-                exec_stmt(clause->extra);
-                if (g_break) { g_break = 0; break; }
-            }
+            if (matched) exec_stmt(clause->extra);
 
         } else if (clause->type == NODE_DEFAULT) {
             if (!matched) matched = 1;
-            if (matched) {
-                exec_stmt(clause->left);
-                if (g_break) { g_break = 0; break; }
-            }
+            if (matched)  exec_stmt(clause->left);
         }
 
         clause = clause->next;
     }
-    g_break = 0; /* consume any leftover break */
+    g_break = 0; /* consume any leftover break, but leave g_continue alone */
 }
 
 /* ================================================================== */
@@ -197,7 +238,7 @@ void exec_stmt(ASTNode *n) {
         /* ---- statement list ---- */
         case NODE_STMT_LIST:
             exec_stmt(n->left);
-            if (!g_break && !g_return)
+            if (!SIGNAL_ACTIVE())
                 exec_stmt(n->next);
             break;
 
@@ -295,35 +336,59 @@ void exec_stmt(ASTNode *n) {
         case NODE_BREAK:
             g_break = 1;
             break;
+        case NODE_CONTINUE:
+            g_continue = 1;
+            break;
+
 
         /* ---- while loop ---- */
         case NODE_WHILE: {
             /*
-             * left  = condition expr
-             * right = body
+             * g_continue → clear it here, jump back to condition check
+             * g_break    → clear it here, exit loop (does NOT propagate)
+             * g_return   → do NOT clear, let it bubble up
              */
             while (eval_expr(n->left)) {
                 exec_stmt(n->right);
-                if (g_break)  { g_break  = 0; break; }
-                if (g_return) break;
+                if (g_continue) { g_continue = 0; continue; }
+                if (g_break)    { g_break    = 0; break;    }
+                if (g_return)   break;
             }
+            break;
+        }
+
+        /* ---- do-while loop ---- */
+        case NODE_DO_WHILE: {
+            /*
+             * Body runs at least once before the condition is checked.
+             * continue → fall through to the condition (do not skip it)
+             * break    → exit immediately, consumed here
+             */
+            do {
+                exec_stmt(n->left);
+                if (g_continue) { g_continue = 0; /* fall to condition */ }
+                if (g_break)    { g_break    = 0; break; }
+                if (g_return)   break;
+            } while (eval_expr(n->right));
             break;
         }
 
         /* ---- for loop ---- */
         case NODE_FOR: {
             /*
-             * left  = init assignment node
-             * right = body
-             * extra = NODE_FOR_PARTS (condition=left, update=right)
-             *         stored directly: extra->left = cond, extra->right = update
+             * continue → clear it, still run the update expression,
+             *            then re-check condition — exactly like C
+             * break    → clear it, exit loop
              */
-            exec_stmt(n->left);               /* init           */
-            while (eval_expr(n->extra->left)) {  /* condition   */
-                exec_stmt(n->right);             /* body         */
-                if (g_break)  { g_break  = 0; break; }
-                if (g_return) break;
-                exec_stmt(n->extra->right);      /* update       */
+            if (n->left)                            /* init (may be NULL) */
+                exec_stmt(n->left);
+            while (eval_expr(n->extra->left)) {    /* condition */
+                exec_stmt(n->right);                /* body      */
+                if (g_continue) { g_continue = 0; }/* fall to update */
+                if (g_break)    { g_break    = 0; break; }
+                if (g_return)   break;
+                if (n->extra->right)                /* update (may be NULL) */
+                    exec_stmt(n->extra->right);
             }
             break;
         }
@@ -341,7 +406,8 @@ void exec_stmt(ASTNode *n) {
     }
     
     /* After executing this statement, execute the next one in the list */
-    if (!g_break && !g_return && n->next) {
+    /* Stop if break, continue, or return is set */
+    if (!g_break && !g_continue && !g_return && n->next) {
         exec_stmt(n->next);
     }
 }

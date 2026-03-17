@@ -188,7 +188,9 @@ static const char *node_name(NodeType t) {
         case NODE_CASE_RANGE:    return "CASE_RANGE";
         case NODE_DEFAULT:       return "DEFAULT";
         case NODE_BREAK:         return "BREAK";
+        case NODE_CONTINUE:      return "CONTINUE";
         case NODE_WHILE:         return "WHILE";
+        case NODE_DO_WHILE:      return "DO_WHILE";
         case NODE_FOR:           return "FOR";
         case NODE_PROGRAM:       return "PROGRAM";
         case NODE_RETURN:        return "RETURN";

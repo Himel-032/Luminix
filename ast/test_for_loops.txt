@@ -1,0 +1,24 @@
+#Attach <stdio.h>
+
+StartExam(){
+    ## Test FOR loop with Break and Continue
+    Show("=== Test For with Continue ===");
+    Repeat(Number i = 0; i < 5; i = i + 1){
+        Check(i == 2){
+            Show("Skipping i=2");
+            Skip;
+        }
+        Show(i);
+    }
+    
+    Show("=== Test For with Break ===");
+    Repeat(Number j = 0; j < 10; j = j + 1){
+        Check(j == 3){
+            Show("Breaking at j=3");
+            Stop;
+        }
+        Show(j);
+    }
+    
+    Return 0;
+}

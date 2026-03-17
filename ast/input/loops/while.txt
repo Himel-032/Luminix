@@ -1,0 +1,21 @@
+
+#Attach <stdio.h>
+
+StartExam(){
+    Number n = 1;
+    WhileStudy(n<5){
+        Show(n);
+        n = n+1;
+        Repeat(Number i=0; i<5; i++){
+            Show(i);
+        }
+    }
+    
+
+    Return 0;
+}
+
+## single line comment
+#* 
+    Multi line comment
+*#
