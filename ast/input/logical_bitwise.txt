@@ -1,0 +1,27 @@
+
+#Attach <stdio.h>
+
+StartExam(){
+    Number a = 12;
+    Number b = 10;
+    Show(a && b);
+    Show(a || b);
+    Show(!a);
+    Show(a & b);
+    Show(a | b);
+    Show(a ^ b);
+    Show(~a);
+    Show(a << 2);
+    Show(a >> 2);
+
+    Show(!0);
+    Show(-8);
+    Return 0;
+}
+
+
+
+## single line comment
+#* 
+    Multi line comment
+*#

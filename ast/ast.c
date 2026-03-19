@@ -225,6 +225,14 @@ static const char *node_name(NodeType t) {
         case NODE_AND:           return "AND";
         case NODE_OR:            return "OR";
         case NODE_NOT:           return "NOT";
+        
+        case NODE_BIT_AND:       return "BIT_AND";
+        case NODE_BIT_OR:        return "BIT_OR";
+        case NODE_BIT_XOR:       return "BIT_XOR";
+        case NODE_BIT_NOT:       return "BIT_NOT";
+        case NODE_SHL:           return "SHL";
+        case NODE_SHR:           return "SHR";
+        
         case NODE_POW:           return "POW";
         case NODE_SQRT:          return "SQRT";
         case NODE_ABS:           return "ABS";

@@ -72,6 +72,14 @@ double eval_expr(ASTNode *n) {
         case NODE_OR:  return (eval_expr(n->left) != 0) || (eval_expr(n->right) != 0);
         case NODE_NOT: return eval_expr(n->left) == 0 ? 1 : 0;
 
+        /* ---- bitwise operations ---- */
+        case NODE_BIT_AND: return (double)((int)eval_expr(n->left) & (int)eval_expr(n->right));
+        case NODE_BIT_OR:  return (double)((int)eval_expr(n->left) | (int)eval_expr(n->right));
+        case NODE_BIT_XOR: return (double)((int)eval_expr(n->left) ^ (int)eval_expr(n->right));
+        case NODE_BIT_NOT: return (double)(~(int)eval_expr(n->left));
+        case NODE_SHL:     return (double)((int)eval_expr(n->left) << (int)eval_expr(n->right));
+        case NODE_SHR:     return (double)((int)eval_expr(n->left) >> (int)eval_expr(n->right));
+
         /* ---- built-in math ---- */
         case NODE_POW:   return pow(eval_expr(n->left), eval_expr(n->right));
         case NODE_SQRT:  return sqrt(eval_expr(n->left));
@@ -307,9 +315,12 @@ void exec_stmt(ASTNode *n) {
                     /* restore quote for freeing later */
                     /* (we don't, because sval is heap-owned and was strdup'd) */
                 }
-            } else {
+            } else if(n->left) {
                 /* numeric expression */
                 printf("%g\n", eval_expr(n->left));
+            } else {
+                /* nothing to print? just print a newline */
+                printf("\n");
             }
             break;
 

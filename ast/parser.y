@@ -83,8 +83,12 @@ static int current_decl_type = 0;   /* 0 = numeric, 1 = char */
 /* ---- precedence ---- */
 %left  OR
 %left  AND
+%left  BIT_OR
+%left  BIT_XOR
+%left  BIT_AND
 %left  EQ NEQ
 %left  GT LT GE LE
+%left  SHL SHR
 %left  PLUS MINUS
 %left  MUL DIV MOD
 %right UNARY
@@ -369,8 +373,14 @@ expression
     | expression MINUS term  { $$ = make_binop(NODE_SUB, $1, $3); }
     | expression AND term         { $$ = make_binop(NODE_AND, $1, $3); }
     | expression OR term          { $$ = make_binop(NODE_OR, $1, $3); }
+    | expression BIT_OR term      { $$ = make_binop(NODE_BIT_OR, $1, $3); }
+    | expression BIT_XOR term     { $$ = make_binop(NODE_BIT_XOR, $1, $3); }
+    | expression BIT_AND term     { $$ = make_binop(NODE_BIT_AND, $1, $3); }
+    | expression SHL term         { $$ = make_binop(NODE_SHL, $1, $3); }
+    | expression SHR term         { $$ = make_binop(NODE_SHR, $1, $3); }
     | MINUS term %prec UNARY { $$ = make_unary(NODE_NEGATE, $2); }
     | NOT term %prec UNARY        { $$ = make_unary(NODE_NOT, $2); }
+    | BIT_NOT term %prec UNARY    { $$ = make_unary(NODE_BIT_NOT, $2); }
     | term                   { $$ = $1; }
     ;
 
@@ -478,6 +488,14 @@ print_stmt
             ASTNode *n = make_node(NODE_PRINT);
             n->sval = NULL;   /* NULL → expression print */
             n->left = $3;
+            $$ = n;
+        }
+    | PRINT LPAREN RPAREN SEMI
+        {
+            ASTNode *n = make_node(NODE_PRINT);
+            n->sval = NULL;
+            n->left = NULL;
+            n->extra = NULL;
             $$ = n;
         }
     ;

@@ -9,13 +9,10 @@ Number fun(){
     Return 110;
 }
 StartExam(){
-    Number a = myFunc(100);
-    Show(a);
-
-    Show(!1);
-
-    
-
+    Number a, b = 5, c;
+    Show(a); 
+    Show();
+    Show("Hello world");
     Return 0;
 }
 

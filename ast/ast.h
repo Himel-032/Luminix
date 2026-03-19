@@ -38,6 +38,14 @@ typedef enum {
     NODE_OR,     /* || */
     NODE_NOT,    /* ! */
 
+    /* bitwise operations */
+    NODE_BIT_AND,    /* & */
+    NODE_BIT_OR,     /* | */
+    NODE_BIT_XOR,    /* ^ */
+    NODE_BIT_NOT,    /* ~ (unary) */
+    NODE_SHL,        /* << */
+    NODE_SHR,        /* >> */
+
 
     /* built-in math functions */
     NODE_POW,
