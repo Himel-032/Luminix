@@ -86,52 +86,53 @@ extern int yydebug;
     MAIN = 287,                    /* MAIN  */
     PRINT = 288,                   /* PRINT  */
     SCAN = 289,                    /* SCAN  */
-    TRUE_LITERAL = 290,            /* TRUE_LITERAL  */
-    FALSE_LITERAL = 291,           /* FALSE_LITERAL  */
-    POW = 292,                     /* POW  */
-    SQRT = 293,                    /* SQRT  */
-    ABS = 294,                     /* ABS  */
-    FLOOR = 295,                   /* FLOOR  */
-    CEIL = 296,                    /* CEIL  */
-    EQ = 297,                      /* EQ  */
-    NEQ = 298,                     /* NEQ  */
-    GE = 299,                      /* GE  */
-    LE = 300,                      /* LE  */
-    GT = 301,                      /* GT  */
-    LT = 302,                      /* LT  */
-    AND = 303,                     /* AND  */
-    OR = 304,                      /* OR  */
-    NOT = 305,                     /* NOT  */
-    INC = 306,                     /* INC  */
-    DEC = 307,                     /* DEC  */
-    PLUS = 308,                    /* PLUS  */
-    MINUS = 309,                   /* MINUS  */
-    MUL = 310,                     /* MUL  */
-    DIV = 311,                     /* DIV  */
-    MOD = 312,                     /* MOD  */
-    ASSIGN = 313,                  /* ASSIGN  */
-    BIT_AND = 314,                 /* BIT_AND  */
-    BIT_OR = 315,                  /* BIT_OR  */
-    BIT_XOR = 316,                 /* BIT_XOR  */
-    BIT_NOT = 317,                 /* BIT_NOT  */
-    SHL = 318,                     /* SHL  */
-    SHR = 319,                     /* SHR  */
-    SEMI = 320,                    /* SEMI  */
-    COMMA = 321,                   /* COMMA  */
-    COLON = 322,                   /* COLON  */
-    LPAREN = 323,                  /* LPAREN  */
-    RPAREN = 324,                  /* RPAREN  */
-    LBRACE = 325,                  /* LBRACE  */
-    RBRACE = 326,                  /* RBRACE  */
-    LBRACKET = 327,                /* LBRACKET  */
-    RBRACKET = 328,                /* RBRACKET  */
-    RANGE = 329,                   /* RANGE  */
-    INT_LITERAL = 330,             /* INT_LITERAL  */
-    FLOAT_LITERAL = 331,           /* FLOAT_LITERAL  */
-    STRING_LITERAL = 332,          /* STRING_LITERAL  */
-    CHAR_LITERAL = 333,            /* CHAR_LITERAL  */
-    IDENTIFIER = 334,              /* IDENTIFIER  */
-    UNARY = 335                    /* UNARY  */
+    END = 290,                     /* END  */
+    TRUE_LITERAL = 291,            /* TRUE_LITERAL  */
+    FALSE_LITERAL = 292,           /* FALSE_LITERAL  */
+    POW = 293,                     /* POW  */
+    SQRT = 294,                    /* SQRT  */
+    ABS = 295,                     /* ABS  */
+    FLOOR = 296,                   /* FLOOR  */
+    CEIL = 297,                    /* CEIL  */
+    EQ = 298,                      /* EQ  */
+    NEQ = 299,                     /* NEQ  */
+    GE = 300,                      /* GE  */
+    LE = 301,                      /* LE  */
+    GT = 302,                      /* GT  */
+    LT = 303,                      /* LT  */
+    AND = 304,                     /* AND  */
+    OR = 305,                      /* OR  */
+    NOT = 306,                     /* NOT  */
+    INC = 307,                     /* INC  */
+    DEC = 308,                     /* DEC  */
+    PLUS = 309,                    /* PLUS  */
+    MINUS = 310,                   /* MINUS  */
+    MUL = 311,                     /* MUL  */
+    DIV = 312,                     /* DIV  */
+    MOD = 313,                     /* MOD  */
+    ASSIGN = 314,                  /* ASSIGN  */
+    BIT_AND = 315,                 /* BIT_AND  */
+    BIT_OR = 316,                  /* BIT_OR  */
+    BIT_XOR = 317,                 /* BIT_XOR  */
+    BIT_NOT = 318,                 /* BIT_NOT  */
+    SHL = 319,                     /* SHL  */
+    SHR = 320,                     /* SHR  */
+    SEMI = 321,                    /* SEMI  */
+    COMMA = 322,                   /* COMMA  */
+    COLON = 323,                   /* COLON  */
+    LPAREN = 324,                  /* LPAREN  */
+    RPAREN = 325,                  /* RPAREN  */
+    LBRACE = 326,                  /* LBRACE  */
+    RBRACE = 327,                  /* RBRACE  */
+    LBRACKET = 328,                /* LBRACKET  */
+    RBRACKET = 329,                /* RBRACKET  */
+    RANGE = 330,                   /* RANGE  */
+    INT_LITERAL = 331,             /* INT_LITERAL  */
+    FLOAT_LITERAL = 332,           /* FLOAT_LITERAL  */
+    STRING_LITERAL = 333,          /* STRING_LITERAL  */
+    CHAR_LITERAL = 334,            /* CHAR_LITERAL  */
+    IDENTIFIER = 335,              /* IDENTIFIER  */
+    UNARY = 336                    /* UNARY  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -149,7 +150,7 @@ union YYSTYPE
     double   dval;
     ASTNode *node;   /* <-- NEW: AST node pointer */
 
-#line 153 "parser.tab.h"
+#line 154 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

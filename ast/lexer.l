@@ -79,6 +79,7 @@ HEADER_USER  \"[a-zA-Z_][a-zA-Z0-9_]*\.h\"
 "StartExam"     { return MAIN; }
 "Show"          { return PRINT; }
 "Take"          { return SCAN; }
+"End"           { return END; }
 
 
 "Power"         { return POW; }

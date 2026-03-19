@@ -9,10 +9,12 @@ Number fun(){
     Return 110;
 }
 StartExam(){
-    Number a, b = 5, c;
-    Show(a); 
-    Show();
+    Number a=66, b = 5, c;
+    Letter l = 'A';
+    Show(a);
+    Show(a);
     Show("Hello world");
+    Show(l, End="Hello");
     Return 0;
 }
 

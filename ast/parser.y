@@ -36,7 +36,7 @@ static int current_decl_type = 0;   /* 0 = numeric, 1 = char */
 %token IF ELSE ELSEIF SWITCH CASE DEFAULT
 %token FOR WHILE DO BREAK CONTINUE RETURN
 
-%token MAIN PRINT SCAN
+%token MAIN PRINT SCAN END
 
 %token TRUE_LITERAL FALSE_LITERAL
 
@@ -76,6 +76,7 @@ static int current_decl_type = 0;   /* 0 = numeric, 1 = char */
 
 %type <node> func_def func_call_expr
 %type <node> param_list param arg_list_opt arg_list
+%type <node> print_end_opt
 %type <ival> ret_type
 
 %type <ival> array_size
@@ -466,40 +467,55 @@ function_call
 /* ================================================================== */
 /*  Print & Scan                                                       */
 /* ================================================================== */
-
 print_stmt
-    : PRINT LPAREN STRING_LITERAL RPAREN SEMI
+    : PRINT LPAREN STRING_LITERAL print_end_opt RPAREN SEMI
         {
             ASTNode *n = make_node(NODE_PRINT);
             n->sval = strdup($3);   /* string literal */
             n->left = NULL;         /* marks this as a string-literal print */
+            n->extra = $4;
             $$ = n;
         }
-    | PRINT LPAREN IDENTIFIER RPAREN SEMI
+    | PRINT LPAREN expression print_end_opt RPAREN SEMI
         {
-            /* print a variable — left != NULL signals identifier mode */
+            /* Handle both identifier and expression cases */
             ASTNode *n = make_node(NODE_PRINT);
-            n->sval = strdup($3);
-            n->left = make_ident($3);   /* non-NULL → identifier print */
+            
+            /* Check if expression is just an identifier */
+            if ($3->type == NODE_IDENT) {
+                /* It's an identifier - print variable */
+                n->sval = strdup($3->sval);
+                n->left = $3;  /* Keep the identifier node */
+            } else {
+                /* It's a complex expression */
+                n->sval = NULL;
+                n->left = $3;
+            }
+            n->extra = $4;
             $$ = n;
         }
-    | PRINT LPAREN expression RPAREN SEMI
-        {
-            ASTNode *n = make_node(NODE_PRINT);
-            n->sval = NULL;   /* NULL → expression print */
-            n->left = $3;
-            $$ = n;
-        }
-    | PRINT LPAREN RPAREN SEMI
+    | PRINT LPAREN print_end_opt RPAREN SEMI
         {
             ASTNode *n = make_node(NODE_PRINT);
             n->sval = NULL;
             n->left = NULL;
-            n->extra = NULL;
+            n->extra = $3;
             $$ = n;
         }
     ;
 
+print_end_opt
+    : COMMA END ASSIGN STRING_LITERAL
+        {
+            ASTNode *n = make_node(NODE_STRING_LIT);
+            n->sval = strdup($4);
+            $$ = n;
+        }
+    | /* empty */
+        {
+            $$ = NULL;
+        }
+    ;
 scan_stmt
     : SCAN LPAREN IDENTIFIER RPAREN SEMI
         {
