@@ -67,6 +67,11 @@ double eval_expr(ASTNode *n) {
         case NODE_GE:  return eval_expr(n->left) >= eval_expr(n->right);
         case NODE_LE:  return eval_expr(n->left) <= eval_expr(n->right);
 
+        /* ---- logical operators ---- */
+        case NODE_AND: return (eval_expr(n->left) != 0) && (eval_expr(n->right) != 0);
+        case NODE_OR:  return (eval_expr(n->left) != 0) || (eval_expr(n->right) != 0);
+        case NODE_NOT: return eval_expr(n->left) == 0 ? 1 : 0;
+
         /* ---- built-in math ---- */
         case NODE_POW:   return pow(eval_expr(n->left), eval_expr(n->right));
         case NODE_SQRT:  return sqrt(eval_expr(n->left));

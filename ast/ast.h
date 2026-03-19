@@ -33,6 +33,12 @@ typedef enum {
     NODE_GE,
     NODE_LE,
 
+    /* logical operators */
+    NODE_AND,    /* && */
+    NODE_OR,     /* || */
+    NODE_NOT,    /* ! */
+
+
     /* built-in math functions */
     NODE_POW,
     NODE_SQRT,

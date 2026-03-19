@@ -367,7 +367,10 @@ array_assignment
 expression
     : expression PLUS term   { $$ = make_binop(NODE_ADD, $1, $3); }
     | expression MINUS term  { $$ = make_binop(NODE_SUB, $1, $3); }
+    | expression AND term         { $$ = make_binop(NODE_AND, $1, $3); }
+    | expression OR term          { $$ = make_binop(NODE_OR, $1, $3); }
     | MINUS term %prec UNARY { $$ = make_unary(NODE_NEGATE, $2); }
+    | NOT term %prec UNARY        { $$ = make_unary(NODE_NOT, $2); }
     | term                   { $$ = $1; }
     ;
 

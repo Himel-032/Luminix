@@ -222,6 +222,9 @@ static const char *node_name(NodeType t) {
         case NODE_LT:            return "LT";
         case NODE_GE:            return "GE";
         case NODE_LE:            return "LE";
+        case NODE_AND:           return "AND";
+        case NODE_OR:            return "OR";
+        case NODE_NOT:           return "NOT";
         case NODE_POW:           return "POW";
         case NODE_SQRT:          return "SQRT";
         case NODE_ABS:           return "ABS";
