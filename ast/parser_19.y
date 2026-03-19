@@ -74,10 +74,6 @@ static int current_decl_type = 0;   /* 0 = numeric, 1 = char */
 %type <node> identifier_list_decls
 %type <node> for_init for_update
 
-%type <node> func_def func_call_expr
-%type <node> param_list param arg_list_opt arg_list
-%type <ival> ret_type
-
 %type <ival> array_size
 
 /* ---- precedence ---- */
@@ -98,62 +94,8 @@ static int current_decl_type = 0;   /* 0 = numeric, 1 = char */
 /* ================================================================== */
 
 program
-    : preprocessor_list top_level_list
+    : preprocessor_list main_function
     ;
-
-top_level_list
-    : top_level_list func_def
-    | top_level_list main_function
-    | /* empty */
-    ;
-
-func_def
-    : ret_type IDENTIFIER LPAREN param_list RPAREN LBRACE statement_list RBRACE
-        {
-            /* Register function into the function table at parse time.
-               The body AST is stored by reference — do NOT free it. */
-            ASTNode *def = make_func_def($2, $1, $4, $7);
-            func_define($2, $1, $4, $7);
-            /* def itself is not added to the program tree —
-               the function table holds the body reference */
-            (void)def;   /* suppress unused-variable warning */
-        }
-    ;
-
-ret_type
-    : INT_TYPE      { $$ = 0; current_decl_type = 0; }
-    | FLOAT_TYPE    { $$ = 0; current_decl_type = 0; }
-    | DOUBLE_TYPE   { $$ = 0; current_decl_type = 0; }
-    | CHAR_TYPE     { $$ = 1; current_decl_type = 1; }
-    | BOOL_TYPE     { $$ = 0; current_decl_type = 0; }
-    | VOID_TYPE     { $$ = 2; current_decl_type = 0; }
-    | LONG_TYPE     { $$ = 0; current_decl_type = 0; }
-    | SHORT_TYPE    { $$ = 0; current_decl_type = 0; }
-    | UNSIGNED_TYPE { $$ = 0; current_decl_type = 0; }
-    ;
-param_list
-    : param_list COMMA param
-        {
-            /* append $3 to end of $1 */
-            if ($1 == NULL) { $$ = $3; }
-            else {
-                ASTNode *t = $1;
-                while (t->next) t = t->next;
-                t->next = $3;
-                $$ = $1;
-            }
-        }
-    | param         { $$ = $1; }
-    | /* empty */   { $$ = NULL; }
-    ;
-
-param
-    : type IDENTIFIER
-        {
-            $$ = make_param($2, current_decl_type);
-        }
-    ;
-
 
 preprocessor_list
     : preprocessor_list preprocessor
@@ -218,8 +160,6 @@ statement
         }
     | loop_stmt            { $$ = $1; }
     | return_stmt SEMI     { $$ = $1; }
-    | func_call_expr SEMI    { $$ = $1; }
-    | RETURN SEMI    { $$ = make_return_void(); }
     ;
 
 /* ================================================================== */
@@ -392,38 +332,6 @@ primary
     | LPAREN expression RPAREN { $$ = $2; }
     | function_call     { $$ = $1; }
     | array_access      { $$ = $1; }
-    | func_call_expr    { $$ = $1; }
-    ;
-
-func_call_expr
-    : IDENTIFIER LPAREN arg_list_opt RPAREN
-        {
-            $$ = make_func_call($1, $3);
-        }
-    ;
-
-arg_list_opt
-    : arg_list   { $$ = $1; }
-    | /* empty */ { $$ = NULL; }
-    ;
-
-arg_list
-    : arg_list COMMA expression
-        {
-            ASTNode *a = make_arg_list($3, NULL);
-            /* append to end */
-            if ($1 == NULL) { $$ = a; }
-            else {
-                ASTNode *t = $1;
-                while (t->next) t = t->next;
-                t->next = a;
-                $$ = $1;
-            }
-        }
-    | expression
-        {
-            $$ = make_arg_list($1, NULL);
-        }
     ;
 
 array_access

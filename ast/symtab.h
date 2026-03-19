@@ -4,10 +4,37 @@
 /* =========================================================
  *  symtab.h  –  Symbol table interface
  * ========================================================= */
+#include "ast.h"   /* for ASTNode* — put this near top of symtab.h */
 
 #define SYMTAB_MAX   1000
 #define ARRAY_MAX    100
 #define ARRAY2D_MAX   50
+
+/* ---- function table ---- */
+#define FUNC_MAX      200
+#define PARAM_MAX      32
+
+typedef struct {
+    char     name[64];
+    int      ret_type;          /* 0=numeric, 1=char, 2=void */
+    int      param_count;
+    char     param_names[PARAM_MAX][64];
+    int      param_types[PARAM_MAX];  /* 0=numeric, 1=char */
+    ASTNode *body;              /* NOT owned — owned by the AST */
+} FuncEntry;
+
+
+
+extern FuncEntry functab[FUNC_MAX];
+extern int       funccount;
+
+/* function table API */
+void func_define(const char *name, int ret_type, ASTNode *params, ASTNode *body);
+FuncEntry *func_lookup(const char *name);
+
+/* scoped symbol-table frames (for local variables) */
+void sym_push_frame(void);   /* save current symcount         */
+void sym_pop_frame(void);    /* restore symcount (drop locals) */
 
 typedef struct {
     char   name[64];

@@ -7,9 +7,87 @@
 #include <string.h>
 #include "symtab.h"
 
+#include "ast.h"
+
 Symbol symtab[SYMTAB_MAX];
 int    symcount = 0;
 
+
+FuncEntry functab[FUNC_MAX];
+int funccount = 0;
+
+/* ------------------------------------------------------------------ */
+/* Scope / frame stack                                                  */
+/* ------------------------------------------------------------------ */
+#define FRAME_STACK_MAX 64
+static int frame_stack[FRAME_STACK_MAX];
+static int frame_top = 0;
+
+/* ------------------------------------------------------------------ */
+/* Function table                                                       */
+/* ------------------------------------------------------------------ */
+void func_define(const char *name, int ret_type,
+                 ASTNode *params, ASTNode *body) {
+    /* Overwrite if already defined (redefinition allowed like C) */
+    for (int i = 0; i < funccount; i++) {
+        if (strcmp(functab[i].name, name) == 0) {
+            functab[i].ret_type = ret_type;
+            functab[i].body     = body;
+            /* re-parse params */
+            functab[i].param_count = 0;
+            ASTNode *p = params;
+            while (p && functab[i].param_count < PARAM_MAX) {
+                strncpy(functab[i].param_names[functab[i].param_count],
+                        p->sval, 63);
+                functab[i].param_types[functab[i].param_count] = p->decl_type;
+                functab[i].param_count++;
+                p = p->next;
+            }
+            return;
+        }
+    }
+    if (funccount >= FUNC_MAX) {
+        fprintf(stderr, "Runtime error: function table full\n");
+        return;
+    }
+    FuncEntry *f = &functab[funccount++];
+    strncpy(f->name, name, 63);
+    f->ret_type    = ret_type;
+    f->body        = body;
+    f->param_count = 0;
+    ASTNode *p = params;
+    while (p && f->param_count < PARAM_MAX) {
+        strncpy(f->param_names[f->param_count], p->sval, 63);
+        f->param_types[f->param_count] = p->decl_type;
+        f->param_count++;
+        p = p->next;
+    }
+}
+
+FuncEntry *func_lookup(const char *name) {
+    for (int i = 0; i < funccount; i++)
+        if (strcmp(functab[i].name, name) == 0)
+            return &functab[i];
+    return NULL;
+}
+
+void sym_push_frame(void) {
+    if (frame_top >= FRAME_STACK_MAX) {
+        fprintf(stderr, "Runtime error: call stack overflow\n");
+        return;
+    }
+    frame_stack[frame_top++] = symcount;
+}
+
+void sym_pop_frame(void) {
+    if (frame_top <= 0) return;
+    symcount = frame_stack[--frame_top];
+    /* Symbols above new symcount are simply dropped.
+       If any held heap-allocated arrays they would need freeing —
+       a production implementation would call free(); for this
+       interpreter the Symbol struct holds everything inline so
+       dropping the count is sufficient. */
+}
 /* ------------------------------------------------------------------ */
 /* Internal helper: find an existing entry or return -1               */
 /* ------------------------------------------------------------------ */

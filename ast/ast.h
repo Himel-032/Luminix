@@ -74,7 +74,15 @@ typedef enum {
 
     /* program */
     NODE_PROGRAM,
-    NODE_RETURN
+    NODE_RETURN,
+
+    /* user-defined functions */
+    NODE_FUNC_DEF,        /* function definition          */
+    NODE_FUNC_CALL,       /* function call expression      */
+    NODE_PARAM,           /* single parameter              */
+    NODE_PARAM_LIST,      /* linked list of params         */
+    NODE_ARG_LIST,        /* linked list of call arguments */
+    NODE_RETURN_VOID,     /* return;  (no value)           */
 } NodeType;
 
 /* ---- forward declaration ---- */
@@ -103,6 +111,8 @@ struct ASTNode {
     /* declaration metadata */
     int decl_type;  /* 0 = numeric, 1 = char */
     int rows, cols; /* for 2-D arrays */
+
+    int ret_type;   /* return type: 0=numeric, 1=char, 2=void */
 };
 
 /* ---- constructors (implemented in ast.c) ---- */
@@ -120,6 +130,13 @@ ASTNode *make_func2(NodeType fn, ASTNode *a, ASTNode *b);
 ASTNode *make_array_access(const char *name, ASTNode *idx);
 ASTNode *make_array_access_2d(const char *name, ASTNode *row, ASTNode *col);
 ASTNode *make_stmt_list(ASTNode *stmt, ASTNode *rest);
+
+/* user-defined function nodes */
+ASTNode *make_param(const char *name, int type);
+ASTNode *make_func_def(const char *name, int ret_type, ASTNode *params, ASTNode *body);
+ASTNode *make_func_call(const char *name, ASTNode *args);
+ASTNode *make_arg_list(ASTNode *expr, ASTNode *next);
+ASTNode *make_return_void(void);
 
 /* free the whole tree */
 void    free_ast(ASTNode *n);

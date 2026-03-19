@@ -85,6 +85,10 @@ double eval_expr(ASTNode *n) {
             return sym_get_array2d(n->sval, r, c);
         }
 
+        /* ---- function call ---- */
+        case NODE_FUNC_CALL:
+            return call_function(n->sval, n->left);
+
         default:
             fprintf(stderr, "Runtime error: unknown expression node type %d\n", n->type);
             return 0;
@@ -396,7 +400,17 @@ void exec_stmt(ASTNode *n) {
         /* ---- return ---- */
         case NODE_RETURN:
             g_retval = eval_expr(n->left);
-            printf("Program returned: %g\n", g_retval);
+            //printf("Program returned: %g\n", g_retval);
+            g_return = 1;
+            break;
+
+        /* function call used as a statement (void call or discarded value) */
+        case NODE_FUNC_CALL:
+            call_function(n->sval, n->left);
+            break;
+        /* return; — void return */
+        case NODE_RETURN_VOID:
+            g_retval = 0;
             g_return = 1;
             break;
 
@@ -410,6 +424,66 @@ void exec_stmt(ASTNode *n) {
     if (!g_break && !g_continue && !g_return && n->next) {
         exec_stmt(n->next);
     }
+}
+
+/* ================================================================== */
+/*  call_function  –  invoke a user-defined function                  */
+/* ================================================================== */
+double call_function(const char *name, ASTNode *arg_list) {
+    FuncEntry *f = func_lookup(name);
+    if (!f) {
+        fprintf(stderr, "Runtime error: undefined function '%s'\n", name);
+        return 0;
+    }
+
+    /* ---- evaluate arguments in the CALLER's scope ---- */
+    double argv[PARAM_MAX];
+    int    argc = 0;
+    ASTNode *a  = arg_list;
+    while (a && argc < PARAM_MAX) {
+        argv[argc++] = eval_expr(a->left);
+        a = a->next;
+    }
+    if (argc != f->param_count) {
+        fprintf(stderr,
+            "Runtime error: function '%s' expects %d args, got %d\n",
+            name, f->param_count, argc);
+        return 0;
+    }
+
+    /* ---- open a new scope ---- */
+    sym_push_frame();
+
+    /* ---- bind parameters as local variables ---- */
+    for (int i = 0; i < f->param_count; i++)
+        sym_set(f->param_names[i], argv[i], f->param_types[i]);
+
+    /* ---- save & reset control-flow signals ---- */
+    int    saved_break    = g_break;
+    int    saved_continue = g_continue;
+    int    saved_return   = g_return;
+    double saved_retval   = g_retval;
+
+    g_break    = 0;
+    g_continue = 0;
+    g_return   = 0;
+    g_retval   = 0;
+
+    /* ---- execute body ---- */
+    exec_stmt(f->body);
+
+    double result = g_retval;
+
+    /* ---- restore signals ---- */
+    g_break    = saved_break;
+    g_continue = saved_continue;
+    g_return   = saved_return;
+    g_retval   = saved_retval;
+
+    /* ---- close scope ---- */
+    sym_pop_frame();
+
+    return result;
 }
 
 /* ================================================================== */

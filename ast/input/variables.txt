@@ -15,7 +15,7 @@ StartExam(){
     Letter ch;
     ch = 'A';
 
-    TrueFalse flag = False;
+    TrueFalse flag = True;
 
     ## arithmetic assignment
     c = a + b;

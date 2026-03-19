@@ -16,4 +16,8 @@ double eval_expr(ASTNode *n);
 /* Execute a statement (or statement list) node */
 void   exec_stmt(ASTNode *n);
 
+/* Call a user-defined function with an evaluated argument list.
+   Returns the function's return value (0.0 for void functions). */
+double call_function(const char *name, ASTNode *arg_list);
+
 #endif /* INTERPRETER_H */

@@ -107,6 +107,60 @@ ASTNode *make_stmt_list(ASTNode *stmt, ASTNode *rest) {
     return n;
 }
 
+/* ---- single parameter: name + type ---- */
+ASTNode *make_param(const char *name, int type) {
+    ASTNode *n = make_node(NODE_PARAM);
+    n->sval      = strdup(name);
+    n->decl_type = type;
+    return n;
+}
+
+/* ---- function definition ---- */
+/*
+ *   sval     = function name
+ *   ret_type = 0 numeric / 1 char / 2 void
+ *   left     = parameter list (NODE_PARAM linked via ->next), may be NULL
+ *   right    = body (statement list)
+ */
+ASTNode *make_func_def(const char *name, int ret_type,
+                       ASTNode *params, ASTNode *body) {
+    ASTNode *n  = make_node(NODE_FUNC_DEF);
+    n->sval     = strdup(name);
+    n->ret_type = ret_type;
+    n->left     = params;
+    n->right    = body;
+    return n;
+}
+
+/* ---- function call ---- */
+/*
+ *   sval  = function name
+ *   left  = argument list (NODE_ARG_LIST linked via ->next), may be NULL
+ */
+ASTNode *make_func_call(const char *name, ASTNode *args) {
+    ASTNode *n = make_node(NODE_FUNC_CALL);
+    n->sval    = strdup(name);
+    n->left    = args;
+    return n;
+}
+
+/* ---- argument list node ---- */
+/*
+ *   left = one argument expression
+ *   next = next argument node
+ */
+ASTNode *make_arg_list(ASTNode *expr, ASTNode *next) {
+    ASTNode *n = make_node(NODE_ARG_LIST);
+    n->left    = expr;
+    n->next    = next;
+    return n;
+}
+
+/* ---- return; (void return) ---- */
+ASTNode *make_return_void(void) {
+    return make_node(NODE_RETURN_VOID);
+}
+
 /* ================================================================
  *  free_ast  –  recursive tree destructor
  * ================================================================ */
@@ -133,6 +187,11 @@ void free_ast(ASTNode *n) {
         case NODE_SCAN:
         case NODE_SCAN_ARRAY:
             if (n->sval) free(n->sval);
+            break;
+        case NODE_FUNC_DEF:
+        case NODE_FUNC_CALL:
+        case NODE_PARAM:
+         if (n->sval) free(n->sval);
             break;
         default:
             break;
@@ -194,6 +253,14 @@ static const char *node_name(NodeType t) {
         case NODE_FOR:           return "FOR";
         case NODE_PROGRAM:       return "PROGRAM";
         case NODE_RETURN:        return "RETURN";
+
+        case NODE_FUNC_DEF:    return "FUNC_DEF";
+        case NODE_FUNC_CALL:   return "FUNC_CALL";
+        case NODE_PARAM:       return "PARAM";
+        case NODE_PARAM_LIST:  return "PARAM_LIST";
+        case NODE_ARG_LIST:    return "ARG_LIST";
+        case NODE_RETURN_VOID: return "RETURN_VOID";
+
         default:                 return "UNKNOWN";
     }
 }
@@ -222,6 +289,11 @@ void print_ast(ASTNode *n, int indent) {
         case NODE_PRINT:
         case NODE_SCAN:
         case NODE_SCAN_ARRAY:
+            if (n->sval) printf(" %s", n->sval);
+            break;
+        case NODE_FUNC_DEF:
+        case NODE_FUNC_CALL:
+        case NODE_PARAM:
             if (n->sval) printf(" %s", n->sval);
             break;
         default: break;
