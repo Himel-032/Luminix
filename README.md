@@ -1,5 +1,6 @@
-Avoid variable declaration inside case statements to avoid runtime error.
-range allowed in case item
+Avoid variable declaration inside case statements to avoid runtime error.(now can be added) <br>
+range allowed in case item.<br>
+user-defined functions before main function. <br>
 
 Step 1: Define AST structs
 
