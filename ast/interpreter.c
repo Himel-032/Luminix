@@ -72,6 +72,14 @@ double eval_expr(ASTNode *n) {
         case NODE_OR:  return (eval_expr(n->left) != 0) || (eval_expr(n->right) != 0);
         case NODE_NOT: return eval_expr(n->left) == 0 ? 1 : 0;
 
+        /* ---- bitwise operations ---- */
+        case NODE_BIT_AND: return (double)((int)eval_expr(n->left) & (int)eval_expr(n->right));
+        case NODE_BIT_OR:  return (double)((int)eval_expr(n->left) | (int)eval_expr(n->right));
+        case NODE_BIT_XOR: return (double)((int)eval_expr(n->left) ^ (int)eval_expr(n->right));
+        case NODE_BIT_NOT: return (double)(~(int)eval_expr(n->left));
+        case NODE_SHL:     return (double)((int)eval_expr(n->left) << (int)eval_expr(n->right));
+        case NODE_SHR:     return (double)((int)eval_expr(n->left) >> (int)eval_expr(n->right));
+
         /* ---- built-in math ---- */
         case NODE_POW:   return pow(eval_expr(n->left), eval_expr(n->right));
         case NODE_SQRT:  return sqrt(eval_expr(n->left));
@@ -287,15 +295,89 @@ void exec_stmt(ASTNode *n) {
         }
 
         /* ---- print ---- */
-        case NODE_PRINT:
+        // case NODE_PRINT:
+        //     if (n->sval) {
+        //         /* print a string literal or identifier */
+        //         if (n->left) {
+        //             /* identifier: n->sval holds name, check type */
+        //             int t = sym_get_type(n->sval);
+        //             double v = sym_get(n->sval);
+        //             if (t == 1) printf("%c\n", (int)v);
+        //             else        printf("%g\n", v);
+        //         } else {
+        //             /* string literal */
+        //             char *s = n->sval;
+        //             /* strip surrounding quotes if present */
+        //             if (s[0] == '"') s++;
+        //             int len = (int)strlen(s);
+        //             if (len > 0 && s[len-1] == '"') s[len-1] = '\0';
+        //             printf("%s\n", s);
+        //             /* restore quote for freeing later */
+        //             /* (we don't, because sval is heap-owned and was strdup'd) */
+        //         }
+        //     } else if(n->left) {
+        //         /* numeric expression */
+        //         printf("%g\n", eval_expr(n->left));
+        //     } else {
+        //         /* nothing to print? just print a newline */
+        //         printf("\n");
+        //     }
+        //     break;
+
+        case NODE_PRINT: {
+            /* Determine the end string (default is newline) */
+            char *end_str = "\n";
+            int should_free_end = 0;
+            
+            if (n->extra && n->extra->type == NODE_STRING_LIT) {
+                /* Custom end string provided */
+                end_str = n->extra->sval;
+                /* Strip surrounding quotes if present */
+                if (end_str[0] == '"') {
+                    end_str = strdup(end_str + 1);
+                    int len = (int)strlen(end_str);
+                    if (len > 0 && end_str[len-1] == '"') {
+                        end_str[len-1] = '\0';
+                    }
+                    should_free_end = 1;
+                } else {
+                    end_str = strdup(end_str);
+                    should_free_end = 1;
+                }
+                
+                /* Process escape sequences */
+                char *processed = (char*)malloc(strlen(end_str) + 1);
+                int j = 0;
+                for (int i = 0; end_str[i]; i++) {
+                    if (end_str[i] == '\\' && end_str[i+1]) {
+                        switch (end_str[i+1]) {
+                            case 'n': processed[j++] = '\n'; i++; break;
+                            case 't': processed[j++] = '\t'; i++; break;
+                            case 'r': processed[j++] = '\r'; i++; break;
+                            case '\\': processed[j++] = '\\'; i++; break;
+                            case '"': processed[j++] = '"'; i++; break;
+                            default: processed[j++] = end_str[i]; break;
+                        }
+                    } else {
+                        processed[j++] = end_str[i];
+                    }
+                }
+                processed[j] = '\0';
+                
+                if (should_free_end) free(end_str);
+                end_str = processed;
+                should_free_end = 1;
+            }
+            
+            /* Print the actual content */
             if (n->sval) {
                 /* print a string literal or identifier */
                 if (n->left) {
                     /* identifier: n->sval holds name, check type */
                     int t = sym_get_type(n->sval);
                     double v = sym_get(n->sval);
-                    if (t == 1) printf("%c\n", (int)v);
-                    else        printf("%g\n", v);
+                    if (t == 1) printf("%c", (int)v);
+                    else        printf("%g", v);
                 } else {
                     /* string literal */
                     char *s = n->sval;
@@ -303,15 +385,21 @@ void exec_stmt(ASTNode *n) {
                     if (s[0] == '"') s++;
                     int len = (int)strlen(s);
                     if (len > 0 && s[len-1] == '"') s[len-1] = '\0';
-                    printf("%s\n", s);
-                    /* restore quote for freeing later */
-                    /* (we don't, because sval is heap-owned and was strdup'd) */
+                    printf("%s", s);
                 }
-            } else {
+            } else if (n->left) {
                 /* numeric expression */
-                printf("%g\n", eval_expr(n->left));
+                printf("%g", eval_expr(n->left));
             }
+            /* If both sval and left are NULL, print nothing (just the end string) */
+            
+            /* Print the end string */
+            printf("%s", end_str);
+            
+            if (should_free_end) free(end_str);
             break;
+        }
+
 
         /* ---- scan ---- */
         case NODE_SCAN: {

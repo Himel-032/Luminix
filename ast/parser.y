@@ -5,6 +5,7 @@
 #include "ast.h"
 #include "symtab.h"
 #include "interpreter.h"
+#include "semantic.h"
 
 void yyerror(const char *s);
 int  yylex(void);
@@ -36,7 +37,7 @@ static int current_decl_type = 0;   /* 0 = numeric, 1 = char */
 %token IF ELSE ELSEIF SWITCH CASE DEFAULT
 %token FOR WHILE DO BREAK CONTINUE RETURN
 
-%token MAIN PRINT SCAN
+%token MAIN PRINT SCAN END
 
 %token TRUE_LITERAL FALSE_LITERAL
 
@@ -76,6 +77,7 @@ static int current_decl_type = 0;   /* 0 = numeric, 1 = char */
 
 %type <node> func_def func_call_expr
 %type <node> param_list param arg_list_opt arg_list
+%type <node> print_end_opt
 %type <ival> ret_type
 
 %type <ival> array_size
@@ -83,8 +85,12 @@ static int current_decl_type = 0;   /* 0 = numeric, 1 = char */
 /* ---- precedence ---- */
 %left  OR
 %left  AND
+%left  BIT_OR
+%left  BIT_XOR
+%left  BIT_AND
 %left  EQ NEQ
 %left  GT LT GE LE
+%left  SHL SHR
 %left  PLUS MINUS
 %left  MUL DIV MOD
 %right UNARY
@@ -116,7 +122,8 @@ func_def
             func_define($2, $1, $4, $7);
             /* def itself is not added to the program tree —
                the function table holds the body reference */
-            (void)def;   /* suppress unused-variable warning */
+           /* (void)def;    suppress unused-variable warning */
+           $$ = def;
         }
     ;
 
@@ -171,6 +178,11 @@ main_function
             /* Build program root and immediately interpret it */
             ASTNode *prog = make_node(NODE_PROGRAM);
             prog->left = $5;
+            if(sem_analyse(prog) != 0){
+                fprintf(stderr, "Aborting due to semantic error. \n");
+                free_ast(prog);
+                YYABORT;
+            }
             interpret(prog);
             free_ast(prog);
         }
@@ -369,8 +381,14 @@ expression
     | expression MINUS term  { $$ = make_binop(NODE_SUB, $1, $3); }
     | expression AND term         { $$ = make_binop(NODE_AND, $1, $3); }
     | expression OR term          { $$ = make_binop(NODE_OR, $1, $3); }
+    | expression BIT_OR term      { $$ = make_binop(NODE_BIT_OR, $1, $3); }
+    | expression BIT_XOR term     { $$ = make_binop(NODE_BIT_XOR, $1, $3); }
+    | expression BIT_AND term     { $$ = make_binop(NODE_BIT_AND, $1, $3); }
+    | expression SHL term         { $$ = make_binop(NODE_SHL, $1, $3); }
+    | expression SHR term         { $$ = make_binop(NODE_SHR, $1, $3); }
     | MINUS term %prec UNARY { $$ = make_unary(NODE_NEGATE, $2); }
     | NOT term %prec UNARY        { $$ = make_unary(NODE_NOT, $2); }
+    | BIT_NOT term %prec UNARY    { $$ = make_unary(NODE_BIT_NOT, $2); }
     | term                   { $$ = $1; }
     ;
 
@@ -456,32 +474,55 @@ function_call
 /* ================================================================== */
 /*  Print & Scan                                                       */
 /* ================================================================== */
-
 print_stmt
-    : PRINT LPAREN STRING_LITERAL RPAREN SEMI
+    : PRINT LPAREN STRING_LITERAL print_end_opt RPAREN SEMI
         {
             ASTNode *n = make_node(NODE_PRINT);
             n->sval = strdup($3);   /* string literal */
             n->left = NULL;         /* marks this as a string-literal print */
+            n->extra = $4;
             $$ = n;
         }
-    | PRINT LPAREN IDENTIFIER RPAREN SEMI
+    | PRINT LPAREN expression print_end_opt RPAREN SEMI
         {
-            /* print a variable — left != NULL signals identifier mode */
+            /* Handle both identifier and expression cases */
             ASTNode *n = make_node(NODE_PRINT);
-            n->sval = strdup($3);
-            n->left = make_ident($3);   /* non-NULL → identifier print */
+            
+            /* Check if expression is just an identifier */
+            if ($3->type == NODE_IDENT) {
+                /* It's an identifier - print variable */
+                n->sval = strdup($3->sval);
+                n->left = $3;  /* Keep the identifier node */
+            } else {
+                /* It's a complex expression */
+                n->sval = NULL;
+                n->left = $3;
+            }
+            n->extra = $4;
             $$ = n;
         }
-    | PRINT LPAREN expression RPAREN SEMI
+    | PRINT LPAREN print_end_opt RPAREN SEMI
         {
             ASTNode *n = make_node(NODE_PRINT);
-            n->sval = NULL;   /* NULL → expression print */
-            n->left = $3;
+            n->sval = NULL;
+            n->left = NULL;
+            n->extra = $3;
             $$ = n;
         }
     ;
 
+print_end_opt
+    : COMMA END ASSIGN STRING_LITERAL
+        {
+            ASTNode *n = make_node(NODE_STRING_LIT);
+            n->sval = strdup($4);
+            $$ = n;
+        }
+    | /* empty */
+        {
+            $$ = NULL;
+        }
+    ;
 scan_stmt
     : SCAN LPAREN IDENTIFIER RPAREN SEMI
         {

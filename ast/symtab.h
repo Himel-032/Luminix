@@ -21,6 +21,7 @@ typedef struct {
     char     param_names[PARAM_MAX][64];
     int      param_types[PARAM_MAX];  /* 0=numeric, 1=char */
     ASTNode *body;              /* NOT owned — owned by the AST */
+    ASTNode *params;            /* NOT owned — param list AST, for semantic use  */
 } FuncEntry;
 
 
