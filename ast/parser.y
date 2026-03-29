@@ -45,7 +45,7 @@ static int current_decl_type = 0;   /* 0 = numeric, 1 = char */
 
 %token EQ NEQ GE LE GT LT
 %token AND OR NOT
-%token INC DEC
+%token INC DEC IN INCREMENT DECREMENT
 %token PLUS MINUS MUL DIV MOD
 %token ASSIGN
 
@@ -215,6 +215,18 @@ statement_list
 statement
     : declaration          { $$ = $1; }
     | assignment SEMI      { $$ = $1; }
+    | INCREMENT IDENTIFIER SEMI
+        {
+            ASTNode *n = make_node(NODE_INCREMENT);
+            n->sval = strdup($2);
+            $$ = n;
+        }
+    | DECREMENT IDENTIFIER SEMI
+        {
+            ASTNode *n = make_node(NODE_DECREMENT);
+            n->sval = strdup($2);
+            $$ = n;
+        }
     | array_assignment SEMI { $$ = $1; }
     | print_stmt           { $$ = $1; }
     | scan_stmt            { $$ = $1; }
@@ -738,6 +750,31 @@ loop_stmt
             n->left  = $3;      /* init  */
             n->right = $10;     /* body  */
             n->extra = parts;   /* parts */
+            $$ = n;
+        }
+    | FOR IDENTIFIER IN LPAREN expression RANGE expression RPAREN
+      LBRACE statement_list RBRACE
+        {
+            ASTNode *n = make_node(NODE_FOR_RANGE);
+            n->sval  = strdup($2);       /* loop variable name */
+            n->left  = $5;              /* start expression   */
+            n->right = $10;             /* body               */
+            n->extra = $7;              /* end expression     */
+            $$ = n;
+        }
+    | FOR IDENTIFIER IN LPAREN expression RANGE expression COMMA expression RPAREN
+      LBRACE statement_list RBRACE
+        {
+            /* pack end + step into a helper node */
+            ASTNode *parts = make_node(NODE_STMT_LIST);
+            parts->left  = $7;   /* end  */
+            parts->right = $9;   /* step */
+
+            ASTNode *n = make_node(NODE_FOR_RANGE_STEP);
+            n->sval  = strdup($2);   /* loop variable name */
+            n->left  = $5;           /* start              */
+            n->right = $12;          /* body               */
+            n->extra = parts;        /* end + step         */
             $$ = n;
         }
     ;

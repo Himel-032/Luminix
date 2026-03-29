@@ -105,34 +105,37 @@ extern int yydebug;
     NOT = 306,                     /* NOT  */
     INC = 307,                     /* INC  */
     DEC = 308,                     /* DEC  */
-    PLUS = 309,                    /* PLUS  */
-    MINUS = 310,                   /* MINUS  */
-    MUL = 311,                     /* MUL  */
-    DIV = 312,                     /* DIV  */
-    MOD = 313,                     /* MOD  */
-    ASSIGN = 314,                  /* ASSIGN  */
-    BIT_AND = 315,                 /* BIT_AND  */
-    BIT_OR = 316,                  /* BIT_OR  */
-    BIT_XOR = 317,                 /* BIT_XOR  */
-    BIT_NOT = 318,                 /* BIT_NOT  */
-    SHL = 319,                     /* SHL  */
-    SHR = 320,                     /* SHR  */
-    SEMI = 321,                    /* SEMI  */
-    COMMA = 322,                   /* COMMA  */
-    COLON = 323,                   /* COLON  */
-    LPAREN = 324,                  /* LPAREN  */
-    RPAREN = 325,                  /* RPAREN  */
-    LBRACE = 326,                  /* LBRACE  */
-    RBRACE = 327,                  /* RBRACE  */
-    LBRACKET = 328,                /* LBRACKET  */
-    RBRACKET = 329,                /* RBRACKET  */
-    RANGE = 330,                   /* RANGE  */
-    INT_LITERAL = 331,             /* INT_LITERAL  */
-    FLOAT_LITERAL = 332,           /* FLOAT_LITERAL  */
-    STRING_LITERAL = 333,          /* STRING_LITERAL  */
-    CHAR_LITERAL = 334,            /* CHAR_LITERAL  */
-    IDENTIFIER = 335,              /* IDENTIFIER  */
-    UNARY = 336                    /* UNARY  */
+    IN = 309,                      /* IN  */
+    INCREMENT = 310,               /* INCREMENT  */
+    DECREMENT = 311,               /* DECREMENT  */
+    PLUS = 312,                    /* PLUS  */
+    MINUS = 313,                   /* MINUS  */
+    MUL = 314,                     /* MUL  */
+    DIV = 315,                     /* DIV  */
+    MOD = 316,                     /* MOD  */
+    ASSIGN = 317,                  /* ASSIGN  */
+    BIT_AND = 318,                 /* BIT_AND  */
+    BIT_OR = 319,                  /* BIT_OR  */
+    BIT_XOR = 320,                 /* BIT_XOR  */
+    BIT_NOT = 321,                 /* BIT_NOT  */
+    SHL = 322,                     /* SHL  */
+    SHR = 323,                     /* SHR  */
+    SEMI = 324,                    /* SEMI  */
+    COMMA = 325,                   /* COMMA  */
+    COLON = 326,                   /* COLON  */
+    LPAREN = 327,                  /* LPAREN  */
+    RPAREN = 328,                  /* RPAREN  */
+    LBRACE = 329,                  /* LBRACE  */
+    RBRACE = 330,                  /* RBRACE  */
+    LBRACKET = 331,                /* LBRACKET  */
+    RBRACKET = 332,                /* RBRACKET  */
+    RANGE = 333,                   /* RANGE  */
+    INT_LITERAL = 334,             /* INT_LITERAL  */
+    FLOAT_LITERAL = 335,           /* FLOAT_LITERAL  */
+    STRING_LITERAL = 336,          /* STRING_LITERAL  */
+    CHAR_LITERAL = 337,            /* CHAR_LITERAL  */
+    IDENTIFIER = 338,              /* IDENTIFIER  */
+    UNARY = 339                    /* UNARY  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -150,7 +153,7 @@ union YYSTYPE
     double   dval;
     ASTNode *node;   /* <-- NEW: AST node pointer */
 
-#line 154 "parser.tab.h"
+#line 157 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
