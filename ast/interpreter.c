@@ -489,7 +489,54 @@ void exec_stmt(ASTNode *n) {
             }
             break;
         }
+        case NODE_FOR_RANGE: {
+            /* Repeat x in (start..end) — end is exclusive like Python */
+            double start = eval_expr(n->left);
+            double end   = eval_expr(n->extra);
+            double step  = (start <= end) ? 1.0 : -1.0;
+            if(start == end) break; /* no iterations if start == end */
+            sym_set(n->sval, start, 0);
+            while ((step > 0) ? (sym_get(n->sval) < end)
+                               : (sym_get(n->sval) > end)) {
+                exec_stmt(n->right);
+                if (g_continue) { g_continue = 0; }
+                if (g_break)    { g_break    = 0; break; }
+                if (g_return)   break;
+                sym_set(n->sval, sym_get(n->sval) + step, 0);
+            }
+            break;
+        }
 
+        case NODE_FOR_RANGE_STEP: {
+            /* Repeat x in (start..end, step) */
+            double start = eval_expr(n->left);
+            double end   = eval_expr(n->extra->left);
+            double step  = eval_expr(n->extra->right);
+            if (step == 0.0) {
+                fprintf(stderr, "Runtime error: range step cannot be zero\n");
+                break;
+            }
+            sym_set(n->sval, start, 0);
+            while ((step > 0) ? (sym_get(n->sval) < end)
+                               : (sym_get(n->sval) > end)) {
+                exec_stmt(n->right);
+                if (g_continue) { g_continue = 0; }
+                if (g_break)    { g_break    = 0; break; }
+                if (g_return)   break;
+                sym_set(n->sval, sym_get(n->sval) + step, 0);
+            }
+            break;
+        }
+
+        case NODE_INCREMENT: {
+            sym_set(n->sval, sym_get(n->sval) + 1.0, 0);
+            break;
+        }
+
+        case NODE_DECREMENT: {
+            sym_set(n->sval, sym_get(n->sval) - 1.0, 0);
+            break;
+        }
         /* ---- return ---- */
         case NODE_RETURN:
             g_retval = eval_expr(n->left);
