@@ -1,0 +1,23 @@
+
+#Attach <stdio.h>
+Letter fun2(){
+    Return 5;
+}
+
+Number fun(Number a){
+    Show("Void function");
+    Return fun2();
+}
+StartExam(){
+ 
+    Number a = fun(1);  
+    Show(a);
+    Return 0;
+}
+
+
+
+## single line comment
+#* 
+    Multi line comment
+*#

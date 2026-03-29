@@ -1,0 +1,27 @@
+
+#Attach <stdio.h>
+
+Number myFunc(Number a){
+    Show("It is a user-defined function");
+    Return a * fun();
+}
+Number fun(){
+    Return 110;
+}
+StartExam(){
+    Number a = myFunc(500);
+    Show(a);
+
+  
+
+    
+
+    Return 0;
+}
+
+
+
+## single line comment
+#* 
+    Multi line comment
+*#
