@@ -85,6 +85,10 @@ typedef enum {
     NODE_WHILE,
     NODE_DO_WHILE,
     NODE_FOR,
+    NODE_FOR_RANGE,       /* for (id in start..end)           */
+    NODE_FOR_RANGE_STEP,  /* for (id in start..end step s)    */
+    NODE_INCREMENT,          /* id++ or ++id                     */
+    NODE_DECREMENT,          /* id-- or --id                     */
 
     /* program */
     NODE_PROGRAM,

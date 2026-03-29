@@ -1,6 +1,6 @@
 
 #Attach <stdio.h>
-Letter fun2(){
+Number fun2(){
     Return 5;
 }
 
@@ -12,6 +12,19 @@ StartExam(){
  
     Number a = fun(1);  
     Show(a);
+    Number x= 5, y=9;
+    Repeat i in (0..10) {
+        Show(i);
+    }
+
+    Repeat i in (0..20, 5) {
+        Show(i);
+    }
+
+    Increment x;
+    Decrement y;
+    Show(x);
+    Show(y);
     Return 0;
 }
 

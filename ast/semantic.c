@@ -688,6 +688,33 @@ static void check_stmt(ASTNode *n)
         return;
     }
 
+    case NODE_FOR_RANGE:
+        case NODE_FOR_RANGE_STEP: {
+            /* declare loop variable in loop scope */
+            inside_loop++;
+            scope_push();
+            sym_declare(n->sval, SEM_TYPE_NUMERIC, 0, 0, 0, 0, 0, n->line);
+            check_expr(n->left);   /* start */
+            check_expr(n->extra->type == NODE_STMT_LIST
+                       ? n->extra->left : n->extra);  /* end */
+            if (n->type == NODE_FOR_RANGE_STEP)
+                check_expr(n->extra->right);           /* step */
+            check_stmts(n->right);                     /* body */
+            scope_pop();
+            inside_loop--;
+            return;
+        }
+
+        case NODE_INCREMENT:
+        case NODE_DECREMENT: {
+            SemSymbol *s = sym_find_visible(n->sval);
+            if (!s)
+                sem_error(n->line, "use of undeclared variable '%s'", n->sval);
+            else if (s->is_array)
+                sem_error(n->line, "'%s' is an array; cannot increment/decrement directly", n->sval);
+            return;
+        }
+
     /* ---- return ---- */
     case NODE_RETURN: {
         if (!current_func) {
