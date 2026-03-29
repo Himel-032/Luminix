@@ -195,6 +195,15 @@ void free_ast(ASTNode *n) {
         case NODE_PARAM:
          if (n->sval) free(n->sval);
             break;
+        case NODE_FOR_RANGE:
+        case NODE_FOR_RANGE_STEP:
+            if (n->sval) free(n->sval);
+            break;
+
+        case NODE_INCREMENT:
+        case NODE_DECREMENT:
+            if (n->sval) free(n->sval);
+            break;
         default:
             break;
     }
@@ -264,6 +273,10 @@ static const char *node_name(NodeType t) {
         case NODE_WHILE:         return "WHILE";
         case NODE_DO_WHILE:      return "DO_WHILE";
         case NODE_FOR:           return "FOR";
+        case NODE_FOR_RANGE:       return "FOR_RANGE";
+        case NODE_FOR_RANGE_STEP:  return "FOR_RANGE_STEP";
+        case NODE_INCREMENT:       return "INCREMENT";
+        case NODE_DECREMENT:       return "DECREMENT";
         case NODE_PROGRAM:       return "PROGRAM";
         case NODE_RETURN:        return "RETURN";
 
@@ -307,6 +320,12 @@ void print_ast(ASTNode *n, int indent) {
         case NODE_FUNC_DEF:
         case NODE_FUNC_CALL:
         case NODE_PARAM:
+            if (n->sval) printf(" %s", n->sval);
+            break;
+        case NODE_FOR_RANGE:
+        case NODE_FOR_RANGE_STEP:
+        case NODE_INCREMENT:
+        case NODE_DECREMENT:
             if (n->sval) printf(" %s", n->sval);
             break;
         default: break;
