@@ -7,11 +7,13 @@
 #include <string.h>
 #include "ast.h"
 
+extern int yylineno;  /* from lexer for line number tracking */
 /* ---- generic allocator ---- */
 ASTNode *make_node(NodeType type) {
     ASTNode *n = calloc(1, sizeof(ASTNode));
     if (!n) { fprintf(stderr, "Out of memory\n"); exit(1); }
     n->type = type;
+    n->line = yylineno;
     return n;
 }
 

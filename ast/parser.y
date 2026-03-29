@@ -5,6 +5,7 @@
 #include "ast.h"
 #include "symtab.h"
 #include "interpreter.h"
+#include "semantic.h"
 
 void yyerror(const char *s);
 int  yylex(void);
@@ -121,7 +122,8 @@ func_def
             func_define($2, $1, $4, $7);
             /* def itself is not added to the program tree —
                the function table holds the body reference */
-            (void)def;   /* suppress unused-variable warning */
+           /* (void)def;    suppress unused-variable warning */
+           $$ = def;
         }
     ;
 
@@ -176,6 +178,11 @@ main_function
             /* Build program root and immediately interpret it */
             ASTNode *prog = make_node(NODE_PROGRAM);
             prog->left = $5;
+            if(sem_analyse(prog) != 0){
+                fprintf(stderr, "Aborting due to semantic error. \n");
+                free_ast(prog);
+                YYABORT;
+            }
             interpret(prog);
             free_ast(prog);
         }

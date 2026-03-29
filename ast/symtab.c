@@ -33,6 +33,8 @@ void func_define(const char *name, int ret_type,
         if (strcmp(functab[i].name, name) == 0) {
             functab[i].ret_type = ret_type;
             functab[i].body     = body;
+            
+            functab[i].params = params;  /* for semantic use */;
             /* re-parse params */
             functab[i].param_count = 0;
             ASTNode *p = params;
@@ -55,6 +57,7 @@ void func_define(const char *name, int ret_type,
     f->ret_type    = ret_type;
     f->body        = body;
     f->param_count = 0;
+    f->params   = params;  /* for semantic use */;
     ASTNode *p = params;
     while (p && f->param_count < PARAM_MAX) {
         strncpy(f->param_names[f->param_count], p->sval, 63);
@@ -98,12 +101,22 @@ static int sym_find(const char *name) {
     return -1;
 }
 
+/* Frame-aware find: searches only in the CURRENT frame */
+static int sym_find_in_frame(const char *name) {
+    int frame_start = (frame_top > 0) ? frame_stack[frame_top - 1] : 0;
+    for (int i = frame_start; i < symcount; i++)
+        if (strcmp(symtab[i].name, name) == 0)
+            return i;
+    return -1;
+}
+
 /* ------------------------------------------------------------------ */
 /* Scalar                                                              */
 /* ------------------------------------------------------------------ */
 void sym_set(const char *name, double value, int decl_type) {
-    int i = sym_find(name);
-    if (i >= 0) {
+    /* When in a function frame, use frame-aware lookup */
+    int i = (frame_top > 0) ? sym_find_in_frame(name) : sym_find(name);
+    if (i >= 0) {  
         symtab[i].value = value;
         return;
     }
@@ -120,7 +133,12 @@ void sym_set(const char *name, double value, int decl_type) {
 }
 
 double sym_get(const char *name) {
-    int i = sym_find(name);
+    /* When in a function frame, prefer frame-aware lookup */
+    int i = (frame_top > 0) ? sym_find_in_frame(name) : -1;
+    if (i < 0) {
+        /* Not in current frame, try global scope */
+        i = sym_find(name);
+    }
     if (i < 0) {
         fprintf(stderr, "Runtime error: variable '%s' not declared\n", name);
         return 0;

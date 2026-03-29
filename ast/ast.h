@@ -127,6 +127,7 @@ struct ASTNode {
     int rows, cols; /* for 2-D arrays */
 
     int ret_type;   /* return type: 0=numeric, 1=char, 2=void */
+    int line;       /* source line number (for error reporting) */
 };
 
 /* ---- constructors (implemented in ast.c) ---- */

@@ -1,20 +1,17 @@
 
 #Attach <stdio.h>
-
-Number myFunc(Number a){
-    Show("It is a user-defined function");
-    Return a * fun();
+Letter fun2(){
+    Return 5;
 }
-Number fun(){
-    Return 110;
+
+Number fun(Number a){
+    Show("Void function");
+    Return fun2();
 }
 StartExam(){
-    Number a=66, b = 5, c;
-    Letter l = 'A';
+ 
+    Number a = fun(1);  
     Show(a);
-    Show(a);
-    Show("Hello world");
-    Show(l, End="Hello");
     Return 0;
 }
 

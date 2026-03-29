@@ -3,7 +3,7 @@
 
 StartExam(){
 
-    Number n = 3;
+    Number n = 2;
     Number m = 2;
 
     
@@ -11,7 +11,7 @@ StartExam(){
 
     Choose(n){
         Option 10..100: 
-            Show(1);
+            Show("10 .. 100");
             Stop;
         Option m:
             Show(2);
@@ -39,7 +39,7 @@ StartExam(){
            
     }
 
-    Number score = 75;
+    Number score = 30;
     
     Choose(score){
         Option 0..39:
