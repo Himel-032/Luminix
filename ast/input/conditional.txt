@@ -4,8 +4,8 @@
 StartExam(){
 
     Number a, b, c, d;
-    a = 0;
-    b = 0;
+    a = 1;
+    b = 08;
     c = 999;
     d = 500;
     Check(a==1){ Show("a==1"); }

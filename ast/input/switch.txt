@@ -3,7 +3,7 @@
 
 StartExam(){
 
-    Number n = 2;
+    Number n = 20;
     Number m = 2;
 
     
@@ -39,7 +39,7 @@ StartExam(){
            
     }
 
-    Number score = 30;
+    Number score = 90;
     
     Choose(score){
         Option 0..39:
