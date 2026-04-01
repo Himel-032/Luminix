@@ -645,6 +645,22 @@ static void check_stmt(ASTNode *n)
     }
 
     /* ---- for ---- */
+//     case NODE_FOR: {
+//     scope_push();
+
+//     if (n->left) check_stmt(n->left);               /* init */
+
+//     ASTNode *parts = n->extra;                      /* NODE_STMT_LIST */
+//     if (parts && parts->left) check_expr(parts->left);  /* condition */
+
+//     inside_loop++;
+//     if (n->right) check_stmts(n->right);            /* body */
+//     if (parts && parts->right) check_stmt(parts->right);/* update */
+//     inside_loop--;
+
+//     scope_pop();
+//     return;
+// }
     case NODE_FOR: {
         /* n->left  = init (declaration or assignment or NULL)
            n->right = condition expression
