@@ -2,6 +2,7 @@ Makefile
 Luminix v2.pdf
 Luminix v2.docx
 parser.tab.c
-luminix.exe
+ast/luminix.exe
 luminix.o
 input.txt
+output.txt

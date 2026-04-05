@@ -1,14 +1,12 @@
-/* =========================================================
- *  ast.c  –  AST node constructors, printer, and cleanup
- * ========================================================= */
+
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "ast.h"
 
-extern int yylineno;  /* from lexer for line number tracking */
-/* ---- generic allocator ---- */
+extern int yylineno;  
+
 ASTNode *make_node(NodeType type) {
     ASTNode *n = calloc(1, sizeof(ASTNode));
     if (!n) { fprintf(stderr, "Out of memory\n"); exit(1); }
@@ -17,7 +15,7 @@ ASTNode *make_node(NodeType type) {
     return n;
 }
 
-/* ---- literal constructors ---- */
+
 ASTNode *make_int_lit(int v) {
     ASTNode *n = make_node(NODE_INT_LIT);
     n->ival = v;
@@ -48,14 +46,14 @@ ASTNode *make_bool_lit(int v) {
     return n;
 }
 
-/* ---- identifier ---- */
+// identifier 
 ASTNode *make_ident(const char *name) {
     ASTNode *n = make_node(NODE_IDENT);
     n->sval = strdup(name);
     return n;
 }
 
-/* ---- binary operator ---- */
+// binary operator 
 ASTNode *make_binop(NodeType op, ASTNode *l, ASTNode *r) {
     ASTNode *n = make_node(op);
     n->left  = l;
@@ -63,21 +61,21 @@ ASTNode *make_binop(NodeType op, ASTNode *l, ASTNode *r) {
     return n;
 }
 
-/* ---- unary operator ---- */
+//  unary operator 
 ASTNode *make_unary(NodeType op, ASTNode *operand) {
     ASTNode *n = make_node(op);
     n->left = operand;
     return n;
 }
 
-/* ---- built-in function with 1 argument ---- */
+//  built-in function with 1 argument 
 ASTNode *make_func1(NodeType fn, ASTNode *arg) {
     ASTNode *n = make_node(fn);
     n->left = arg;
     return n;
 }
 
-/* ---- built-in function with 2 arguments ---- */
+//  built-in function with 2 arguments 
 ASTNode *make_func2(NodeType fn, ASTNode *a, ASTNode *b) {
     ASTNode *n = make_node(fn);
     n->left  = a;
@@ -85,7 +83,7 @@ ASTNode *make_func2(NodeType fn, ASTNode *a, ASTNode *b) {
     return n;
 }
 
-/* ---- array access ---- */
+/*  array access  */
 ASTNode *make_array_access(const char *name, ASTNode *idx) {
     ASTNode *n = make_node(NODE_ARRAY_ACCESS);
     n->sval = strdup(name);
@@ -101,7 +99,7 @@ ASTNode *make_array_access_2d(const char *name, ASTNode *row, ASTNode *col) {
     return n;
 }
 
-/* ---- statement list (prepend style — reversed in grammar) ---- */
+// statement list
 ASTNode *make_stmt_list(ASTNode *stmt, ASTNode *rest) {
     ASTNode *n = make_node(NODE_STMT_LIST);
     n->left = stmt;  /* current statement  */
@@ -109,7 +107,7 @@ ASTNode *make_stmt_list(ASTNode *stmt, ASTNode *rest) {
     return n;
 }
 
-/* ---- single parameter: name + type ---- */
+/*  single parameter */
 ASTNode *make_param(const char *name, int type) {
     ASTNode *n = make_node(NODE_PARAM);
     n->sval      = strdup(name);
@@ -117,13 +115,8 @@ ASTNode *make_param(const char *name, int type) {
     return n;
 }
 
-/* ---- function definition ---- */
-/*
- *   sval     = function name
- *   ret_type = 0 numeric / 1 char / 2 void
- *   left     = parameter list (NODE_PARAM linked via ->next), may be NULL
- *   right    = body (statement list)
- */
+// function definition 
+
 ASTNode *make_func_def(const char *name, int ret_type,
                        ASTNode *params, ASTNode *body) {
     ASTNode *n  = make_node(NODE_FUNC_DEF);
@@ -134,11 +127,8 @@ ASTNode *make_func_def(const char *name, int ret_type,
     return n;
 }
 
-/* ---- function call ---- */
-/*
- *   sval  = function name
- *   left  = argument list (NODE_ARG_LIST linked via ->next), may be NULL
- */
+// function call 
+
 ASTNode *make_func_call(const char *name, ASTNode *args) {
     ASTNode *n = make_node(NODE_FUNC_CALL);
     n->sval    = strdup(name);
@@ -146,11 +136,8 @@ ASTNode *make_func_call(const char *name, ASTNode *args) {
     return n;
 }
 
-/* ---- argument list node ---- */
-/*
- *   left = one argument expression
- *   next = next argument node
- */
+// argument list node 
+
 ASTNode *make_arg_list(ASTNode *expr, ASTNode *next) {
     ASTNode *n = make_node(NODE_ARG_LIST);
     n->left    = expr;
@@ -158,14 +145,12 @@ ASTNode *make_arg_list(ASTNode *expr, ASTNode *next) {
     return n;
 }
 
-/* ---- return; (void return) ---- */
+
 ASTNode *make_return_void(void) {
     return make_node(NODE_RETURN_VOID);
 }
 
-/* ================================================================
- *  free_ast  –  recursive tree destructor
- * ================================================================ */
+
 void free_ast(ASTNode *n) {
     if (!n) return;
     free_ast(n->left);
@@ -173,7 +158,7 @@ void free_ast(ASTNode *n) {
     free_ast(n->extra);
     free_ast(n->next);
 
-    /* free heap strings */
+    /* free heap  */
     switch (n->type) {
         case NODE_IDENT:
         case NODE_STRING_LIT:
@@ -210,9 +195,9 @@ void free_ast(ASTNode *n) {
     free(n);
 }
 
-/* ================================================================
- *  print_ast  –  human-readable tree dump (for debugging)
- * ================================================================ */
+
+
+
 static const char *node_name(NodeType t) {
     switch (t) {
         case NODE_INT_LIT:       return "INT_LIT";
@@ -291,22 +276,22 @@ static const char *node_name(NodeType t) {
     }
 }
 
-void print_ast(ASTNode *n, int indent) {
+void print_ast_file(ASTNode *n, int indent, FILE *out) {
     if (!n) return;
-    for (int i = 0; i < indent; i++) printf("  ");
+    for (int i = 0; i < indent; i++) fprintf(out, "  ");
 
-    printf("[%s]", node_name(n->type));
+    fprintf(out, "[%s]", node_name(n->type));
 
     switch (n->type) {
-        case NODE_INT_LIT:    printf(" %d", n->ival);          break;
-        case NODE_FLOAT_LIT:  printf(" %g", n->dval);          break;
-        case NODE_CHAR_LIT:   printf(" '%c'", n->cval);        break;
-        case NODE_BOOL_LIT:   printf(" %s", n->ival ? "true" : "false"); break;
-        case NODE_STRING_LIT: printf(" \"%s\"", n->sval);      break;
-        case NODE_IDENT:      printf(" %s", n->sval);          break;
-        case NODE_DECL:       printf(" %s (type=%d)", n->sval, n->decl_type); break;
-        case NODE_DECL_ARRAY: printf(" %s[%d] (type=%d)", n->sval, n->cols, n->decl_type); break;
-        case NODE_DECL_ARRAY_2D: printf(" %s[%d][%d]", n->sval, n->rows, n->cols); break;
+        case NODE_INT_LIT:    fprintf(out, " %d", n->ival);          break;
+        case NODE_FLOAT_LIT:  fprintf(out, " %g", n->dval);          break;
+        case NODE_CHAR_LIT:   fprintf(out, " '%c'", n->cval);        break;
+        case NODE_BOOL_LIT:   fprintf(out, " %s", n->ival ? "true" : "false"); break;
+        case NODE_STRING_LIT: fprintf(out, " \"%s\"", n->sval);      break;
+        case NODE_IDENT:      fprintf(out, " %s", n->sval);          break;
+        case NODE_DECL:       fprintf(out, " %s (type=%d)", n->sval, n->decl_type); break;
+        case NODE_DECL_ARRAY: fprintf(out, " %s[%d] (type=%d)", n->sval, n->cols, n->decl_type); break;
+        case NODE_DECL_ARRAY_2D: fprintf(out, " %s[%d][%d]", n->sval, n->rows, n->cols); break;
         case NODE_ASSIGN:
         case NODE_ARRAY_ASSIGN:
         case NODE_ARRAY_ASSIGN_2D:
@@ -315,29 +300,33 @@ void print_ast(ASTNode *n, int indent) {
         case NODE_PRINT:
         case NODE_SCAN:
         case NODE_SCAN_ARRAY:
-            if (n->sval) printf(" %s", n->sval);
+            if (n->sval) fprintf(out, " %s", n->sval);
             break;
         case NODE_FUNC_DEF:
         case NODE_FUNC_CALL:
         case NODE_PARAM:
-            if (n->sval) printf(" %s", n->sval);
+            if (n->sval) fprintf(out, " %s", n->sval);
             break;
         case NODE_FOR_RANGE:
         case NODE_FOR_RANGE_STEP:
         case NODE_INCREMENT:
         case NODE_DECREMENT:
-            if (n->sval) printf(" %s", n->sval);
+            if (n->sval) fprintf(out, " %s", n->sval);
             break;
         default: break;
     }
-    printf("\n");
+    fprintf(out, "\n");
 
-    print_ast(n->left,  indent + 1);
-    print_ast(n->right, indent + 1);
-    print_ast(n->extra, indent + 1);
+    print_ast_file(n->left,  indent + 1, out);
+    print_ast_file(n->right, indent + 1, out);
+    print_ast_file(n->extra, indent + 1, out);
 
     /* print sibling statements */
     if (n->next) {
-        print_ast(n->next, indent);
+        print_ast_file(n->next, indent, out);
     }
+}
+
+void print_ast(ASTNode *n, int indent) {
+    print_ast_file(n, indent, stdout);
 }

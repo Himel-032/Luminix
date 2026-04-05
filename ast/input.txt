@@ -1,25 +1,11 @@
-
 #Attach <stdio.h>
-Number fun2(){
-    Return 5;
+
+StartExam(){
+Repeat(Number i = 0; i<5;  i= i+1 ){
+        Show(i);
 }
 
-Nothing fun(Number a){
-    Show("Void function");
-    Return ;
-}
-StartExam(){
- 
-    Number x = 5;
-    Number y = x + 3 * 2;
-    Show(y);
-    fun(10);
     Return 0;
 }
 
 
-
-## single line comment
-#* 
-    Multi line comment
-*#
