@@ -1,34 +1,66 @@
 #Attach <stdio.h>
 
 StartExam(){
-    ## Test 1: While loop with break and continue
-    Show("=== Test 1: While Loop with Break and Continue ===");
+    
+    Show("While Loop");
     Number counter = 0;
     WhileStudy(counter < 10){
         Number temp = counter;
         counter = counter + 1;
-        Check(temp == 2){
-            Show("Skipping counter=2");
-            Skip;
-        }
-        Check(temp == 5){
-            Show("Breaking at counter=5");
-            Stop;
-        }
         Show(temp);
     }
+    counter = 0;
+    WhileStudy(counter < 10){
+        
+        counter = counter + 1;
+        Check(counter == 5){
+            Stop;
+        }
+        Show(counter);
+    }
+        counter = 0;
+    WhileStudy(counter < 10){
+        
+        counter = counter + 1;
+        Check(counter == 5){
+            Skip;
+        }
+        Show(counter);
+    }
     
-    ## Test 2: Do-While loop
-    Show("=== Test 2: Do-While Loop ===");
+    
+    Show("Do-While Loop");
     Number x = 0;
     DoOnce{
         Show(x);
         x = x + 1;
     }
     WhileStudy(x < 3);
+
+     x = 0;
+    DoOnce{
+        Check(x==5){
+            Stop;
+        }
+        Show(x);
+        x = x + 1;
+    }
+    WhileStudy(x < 10);
+
+     x = 0;
+    DoOnce{
+        
+        
+        x = x + 1;
+        Check(x==5){
+            Skip;
+        }
+        Show(x);
+    }
+    WhileStudy(x < 10);
     
-    ## Test 3: For loop with break and continue
-    Show("=== Test 3: For Loop with Break and Continue ===");
+    
+    Show("For Loop");
     Repeat(Number j = 0; j < 10; j = j + 1){
         Check(j == 3){
             Show("Skipping j=3");
@@ -41,66 +73,7 @@ StartExam(){
         Show(j);
     }
     
-    ## Test 4: Nested While loops
-    Show("=== Test 4: Nested While Loops ===");
-    Number i = 0;
-    WhileStudy(i < 3){
-        Show("Outer i =");
-        Show(i);
-        Number k = 0;
-        WhileStudy(k < 3){
-            Number temp_k = k;
-            k = k + 1;
-            Check(temp_k == 1){
-                Show("  Inner k=1, skipping");
-                Skip;
-            }
-            Show("  Inner k =");
-            Show(temp_k);
-        }
-        i = i + 1;
-    }
-    
-    ## Test 5: Nested For loops
-    Show("=== Test 5: Nested For Loops ===");
-    Repeat(Number row = 0; row < 3; row = row + 1){
-        Show("Row =");
-        Show(row);
-        Repeat(Number col = 0; col < 4; col = col + 1){
-            Check(col == 1){
-                Show("  Skipping col=1");
-                Skip;
-            }
-            Check(col == 3){
-                Show("  Breaking at col=3");
-                Stop;
-            }
-            Show("  Col =");
-            Show(col);
-        }
-    }
-    
-    ## Test 6: For loop with declaration and empty update
-    Show("=== Test 6: For Loop with Variable Declaration ===");
-    Repeat(Number m = 0; m < 5; m = m + 1){
-        Show(m);
-    }
-    
-    ## Test 7: While with nested For loop
-    Show("=== Test 7: While with Nested For Loop ===");
-    Number outer = 0;
-    WhileStudy(outer < 2){
-        Show("Outer loop, iteration =");
-        Show(outer);
-        Repeat(Number inner = 0; inner < 3; inner = inner + 1){
-            Show("  Inner =");
-            Show(inner);
-        }
-        outer = outer + 1;
-    }
-    
-    Show("=== All Tests Completed ===");
-
+ 
     Repeat i in (0..10) {
         Show(i);
     }
