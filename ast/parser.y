@@ -11,21 +11,21 @@ void yyerror(const char *s);
 int  yylex(void);
 extern int yylineno;
 
-/* tracks declaration type for declarations */
+
 static int current_decl_type = 0;   /* 0 = numeric, 1 = char */
 %}
 
-/* ---- value types ---- */
+/* value types */
 %union {
     int      ival;
     float    fval;
     char     cval;
     char    *sval;
     double   dval;
-    ASTNode *node;   /* <-- NEW: AST node pointer */
+    ASTNode *node;   
 }
 
-/* -----tokens------- */
+
 
 %token INCLUDE DEFINE HEADER
 
@@ -63,7 +63,7 @@ static int current_decl_type = 0;   /* 0 = numeric, 1 = char */
 %token <cval> CHAR_LITERAL
 %token <sval> IDENTIFIER
 
-/* ---- non-terminal types ---- */
+
 %type <node> expression term factor primary condition
 %type <node> function_call array_access
 %type <node> statement statement_list
@@ -82,7 +82,7 @@ static int current_decl_type = 0;   /* 0 = numeric, 1 = char */
 
 %type <ival> array_size
 
-/* ---- precedence ---- */
+
 %left  OR
 %left  AND
 %left  BIT_OR
@@ -99,9 +99,7 @@ static int current_decl_type = 0;   /* 0 = numeric, 1 = char */
 
 %%
 
-/* ================================================================== */
-/*  Top-level                                                          */
-/* ================================================================== */
+
 
 program
     : preprocessor_list top_level_list
@@ -178,6 +176,15 @@ main_function
             /* Build program root and immediately interpret it */
             ASTNode *prog = make_node(NODE_PROGRAM);
             prog->left = $5;
+/*
+            FILE *ast_out = fopen("ast.txt", "w");
+            if (ast_out) {
+                print_ast_file(prog, 0, ast_out);
+                fclose(ast_out);
+            } else {
+                fprintf(stderr, "Warning: could not open ast.txt for writing.\n");
+            }
+*/
             if(sem_analyse(prog) != 0){
                 fprintf(stderr, "Aborting due to semantic error. \n");
                 free_ast(prog);
@@ -188,9 +195,7 @@ main_function
         }
     ;
 
-/* ================================================================== */
-/*  Statements                                                         */
-/* ================================================================== */
+
 
 statement_list
     : statement_list statement
@@ -246,9 +251,7 @@ statement
     | RETURN SEMI    { $$ = make_return_void(); }
     ;
 
-/* ================================================================== */
-/*  Declarations                                                       */
-/* ================================================================== */
+
 
 declaration
     : type identifier_list_decls SEMI
@@ -308,11 +311,7 @@ type
     | UNSIGNED_TYPE { current_decl_type = 0; }
     ;
 
-/*
- * A comma-separated list of declarators:
- *   x, y = 5, z
- * Each declarator becomes a NODE_DECL; they are linked via ->next.
- */
+
 identifier_list_decls
     : IDENTIFIER
         {
@@ -350,9 +349,6 @@ identifier_list_decls
         }
     ;
 
-/* ================================================================== */
-/*  Assignment                                                         */
-/* ================================================================== */
 
 assignment
     : IDENTIFIER ASSIGN expression
@@ -384,9 +380,6 @@ array_assignment
         }
     ;
 
-/* ================================================================== */
-/*  Expressions                                                        */
-/* ================================================================== */
 
 expression
     : expression PLUS term   { $$ = make_binop(NODE_ADD, $1, $3); }
@@ -466,9 +459,6 @@ array_access
         { $$ = make_array_access_2d($1, $3, $6); }
     ;
 
-/* ================================================================== */
-/*  Built-in functions                                                 */
-/* ================================================================== */
 
 function_call
     : POW LPAREN expression COMMA expression RPAREN
@@ -483,9 +473,7 @@ function_call
         { $$ = make_func1(NODE_CEIL, $3); }
     ;
 
-/* ================================================================== */
-/*  Print & Scan                                                       */
-/* ================================================================== */
+
 print_stmt
     : PRINT LPAREN STRING_LITERAL print_end_opt RPAREN SEMI
         {
@@ -551,9 +539,7 @@ scan_stmt
         }
     ;
 
-/* ================================================================== */
-/*  Condition                                                          */
-/* ================================================================== */
+
 
 condition
     : expression EQ  expression { $$ = make_binop(NODE_EQ,  $1, $3); }
@@ -564,18 +550,9 @@ condition
     | expression LE  expression { $$ = make_binop(NODE_LE,  $1, $3); }
     ;
 
-/* ================================================================== */
-/*  If / Elseif / Else                                                 */
-/* ================================================================== */
 
-/*
- * if_stmt builds:
- *
- *   NODE_IF
- *     left  = condition
- *     right = then-body
- *     extra = else_if_part (chain of NODE_ELSEIF / NODE_ELSE / NULL)
- */
+
+
 if_stmt
     : IF LPAREN condition RPAREN LBRACE statement_list RBRACE else_if_part
         {
@@ -605,15 +582,9 @@ else_if_part
     | /* empty */ { $$ = NULL; }
     ;
 
-/* ================================================================== */
-/*  Switch                                                             */
-/* ================================================================== */
 
-/*
- * NODE_SWITCH
- *   left  = switch expression
- *   right = head of case list (linked via ->next)
- */
+
+
 switch_stmt
     : SWITCH LPAREN expression RPAREN LBRACE case_list RBRACE
         {
@@ -693,24 +664,7 @@ default_item
         }
     ;
 
-/* ================================================================== */
-/*  Loops                                                              */
-/* ================================================================== */
 
-/*
- * NODE_WHILE
- *   left  = condition
- *   right = body
- *
- * NODE_FOR
- *   left  = init (assignment or declaration node)
- *   right = body
- *   extra = NODE_FOR_PARTS
- *              left  = condition
- *              right = update (assignment node)
- *
- * We reuse NODE_STMT_LIST as a container for the for-parts.
- */
 
 for_init
     : assignment { $$ = $1; }
@@ -779,9 +733,7 @@ loop_stmt
         }
     ;
 
-/* ================================================================== */
-/*  Return                                                             */
-/* ================================================================== */
+
 
 return_stmt
     : RETURN expression
@@ -794,7 +746,7 @@ return_stmt
 
 %%
 
-/* ------------------------------------------------------------------ */
+
 void yyerror(const char *s) {
     fprintf(stderr, "Syntax error at line %d: %s\n", yylineno, s);
 }

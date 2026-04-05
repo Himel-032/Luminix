@@ -151,7 +151,7 @@ union YYSTYPE
     char     cval;
     char    *sval;
     double   dval;
-    ASTNode *node;   /* <-- NEW: AST node pointer */
+    ASTNode *node;   
 
 #line 157 "parser.tab.h"
 
