@@ -2,6 +2,7 @@
     #include <stdio.h>
     #include <stdlib.h>
     #include <string.h>
+    #include "ast.h"
     #include "parser.tab.h"
   
     
@@ -69,6 +70,9 @@ HEADER_USER  \"[a-zA-Z_][a-zA-Z0-9_]*\.h\"
 
 
 "Repeat"        { return FOR; }
+"in"            { return IN; }
+"Increment"     { return INCREMENT; }
+"Decrement"     { return DECREMENT; }
 "WhileStudy"    { return WHILE; }
 "DoOnce"        { return DO; }
 "Skip"          { return CONTINUE; }
@@ -78,6 +82,7 @@ HEADER_USER  \"[a-zA-Z_][a-zA-Z0-9_]*\.h\"
 "StartExam"     { return MAIN; }
 "Show"          { return PRINT; }
 "Take"          { return SCAN; }
+"End"           { return END; }
 
 
 "Power"         { return POW; }

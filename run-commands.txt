@@ -1,4 +1,11 @@
-bison -d parser.y; flex lexer.l; gcc parser.tab.c lex.yy.c ast.c interpreter.c symtab.c semantic.c  -o luminix; .\luminix.exe .\input\variables.txt
+bison -d parser.y
+
+flex lexer.l
+
+gcc parser.tab.c lex.yy.c ast.c interpreter.c symtab.c semantic.c  -o luminix
+.\luminix.exe .\input.txt
+
+.\luminix.exe .\input\variables.txt
 
  .\luminix.exe .\input\switch.txt  
 

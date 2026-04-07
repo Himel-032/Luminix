@@ -1,209 +1,31 @@
-/* bison -d parser.y; flex lexer.l; gcc parser.tab.c lex.yy.c -o luminix; ./luminix input.txt */
-
 %{
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
-
-#define SWITCH_STACK_MAX 64
-#define SWITCH_EPSILON 1e-9
-typedef struct {
-    double value;       /* the switch expression value          */
-    int matched;     /* 1 = a case has already matched       */
-    int done;        /* 1 = break was hit, skip rest         */
-    int outer_exec;  /* saved execute_flag before this switch */
-} SwitchFrame;
-
-SwitchFrame switch_stack[SWITCH_STACK_MAX];
-int switch_top = -1;   /* index of current (innermost) frame  */
-
-int break_flag = 0;    /* set by break; cleared after use     */
-/* helpers */
-void switch_push(double val, int outer_exec) {
-    if (switch_top + 1 >= SWITCH_STACK_MAX) {
-        fprintf(stderr, "Runtime error: switch nesting too deep\n");
-        return;
-    }
-    switch_top++;
-    switch_stack[switch_top].value      = val;
-    switch_stack[switch_top].matched    = 0;
-    switch_stack[switch_top].done       = 0;
-    switch_stack[switch_top].outer_exec = outer_exec;
-}
-
-void switch_pop(void) {
-    if (switch_top < 0) {
-        fprintf(stderr, "Runtime error: switch stack underflow\n");
-        return;
-    }
-    switch_top--;
-}
-
-SwitchFrame *switch_cur(void) {
-    /* returns pointer to innermost active switch frame */
-    if (switch_top < 0) return NULL;
-    return &switch_stack[switch_top];
-}
-
-int sw_match(double a, double b) {
-    return fabs(a - b) < SWITCH_EPSILON;
-}
+#include "ast.h"
+#include "symtab.h"
+#include "interpreter.h"
+#include "semantic.h"
 
 void yyerror(const char *s);
-int yylex(void);
+int  yylex(void);
 extern int yylineno;
 
-/* ---------------- Symbol Table ---------------- */
 
-typedef struct{
-    char name[50];
-    double value;
-    int type; /* 0: numeric, 1: char */
-    int is_array;
-    int dimensions; /* 1= 1D, 2 = 2D */
-    int rows;
-    int cols;
-    double array_values[100];
-    int array_size;
-
-    double array2d[50][50];
-} Symbol;
-
-Symbol symtab[1000];
-int symcount = 0;
-int execute_flag = 1;  /* 1 = execute, 0 = skip */
-int loop_flag = 0;     /* 1 = in loop, 0 = not in loop */
-
-int current_decl_type = 0; /* 0: numeric, 1: char */
-
-void set_symbol(char *name, double value){
-    for(int i=0;i<symcount;i++){
-        if(strcmp(symtab[i].name,name)==0){
-            symtab[i].value=value;
-            return;
-        }
-    }
-    strcpy(symtab[symcount].name,name);
-    symtab[symcount].value=value;
-    symtab[symcount].type=current_decl_type;
-    symtab[symcount].is_array=0;
-    symtab[symcount].array_size=0;
-    symcount++;
-}
-
-int get_symbol_type(char *name){
-    for(int i=0;i<symcount;i++){
-        if(strcmp(symtab[i].name,name)==0)
-            return symtab[i].type;
-    }
-    return 0;
-}
-
-void declare_2d_array(char *name,int r,int c){
-    strcpy(symtab[symcount].name,name);
-
-    symtab[symcount].is_array = 1;
-    symtab[symcount].dimensions = 2;
-
-    symtab[symcount].rows = r;
-    symtab[symcount].cols = c;
-    symtab[symcount].type = current_decl_type;
-
-    for(int i=0;i<r;i++)
-        for(int j=0;j<c;j++)
-            symtab[symcount].array2d[i][j] = 0;
-
-    symcount++;
-}
-
-void set_array2d_element(char *name,int r,int c,double value){
-    for(int i=0;i<symcount;i++){
-        if(strcmp(symtab[i].name,name)==0){
-
-            if(symtab[i].dimensions == 2 &&
-               r < symtab[i].rows &&
-               c < symtab[i].cols){
-
-                symtab[i].array2d[r][c] = value;
-            }
-
-            return;
-        }
-    }
-}
-double get_array2d_element(char *name,int r,int c){
-    for(int i=0;i<symcount;i++){
-        if(strcmp(symtab[i].name,name)==0){
-
-            if(symtab[i].dimensions == 2 &&
-               r < symtab[i].rows &&
-               c < symtab[i].cols){
-
-                return symtab[i].array2d[r][c];
-            }
-        }
-    }
-
-    printf("Runtime error: 2D array access error\n");
-    return 0;
-}
-
-void set_array_element(char *name, int index, double value){
-    for(int i=0;i<symcount;i++){
-        if(strcmp(symtab[i].name,name)==0){
-            if(symtab[i].is_array && index >= 0 && index < symtab[i].array_size){
-                symtab[i].array_values[index]=value;
-            }
-            return;
-        }
-    }
-}
-
-double get_array_element(char *name, int index){
-    for(int i=0;i<symcount;i++){
-        if(strcmp(symtab[i].name,name)==0){
-            if(symtab[i].is_array && index >= 0 && index < symtab[i].array_size){
-                return symtab[i].array_values[index];
-            }
-        }
-    }
-    printf("Runtime error: array access error\n");
-    return 0;
-}
-
-void declare_array(char *name, int size){
-    strcpy(symtab[symcount].name,name);
-    symtab[symcount].is_array=1;
-    symtab[symcount].dimensions=1;
-    symtab[symcount].array_size=size;
-    symtab[symcount].type = current_decl_type;
-    for(int i=0;i<size;i++){
-        symtab[symcount].array_values[i]=0;
-    }
-    symcount++;
-}
-
-double get_symbol(char *name){
-    for(int i=0;i<symcount;i++){
-        if(strcmp(symtab[i].name,name)==0)
-            return symtab[i].value;
-    }
-    printf("Runtime error: variable %s not declared\n",name);
-    return 0;
-}
-
+static int current_decl_type = 0;   /* 0 = numeric, 1 = char */
 %}
 
-%union{
-    int ival;
-    float fval;
-    char cval;
-    char *sval;
-    double dval;
+/* value types */
+%union {
+    int      ival;
+    float    fval;
+    char     cval;
+    char    *sval;
+    double   dval;
+    ASTNode *node;   
 }
 
-/* tokens */
+
 
 %token INCLUDE DEFINE HEADER
 
@@ -215,7 +37,7 @@ double get_symbol(char *name){
 %token IF ELSE ELSEIF SWITCH CASE DEFAULT
 %token FOR WHILE DO BREAK CONTINUE RETURN
 
-%token MAIN PRINT SCAN
+%token MAIN PRINT SCAN END
 
 %token TRUE_LITERAL FALSE_LITERAL
 
@@ -223,7 +45,7 @@ double get_symbol(char *name){
 
 %token EQ NEQ GE LE GT LT
 %token AND OR NOT
-%token INC DEC
+%token INC DEC IN INCREMENT DECREMENT
 %token PLUS MINUS MUL DIV MOD
 %token ASSIGN
 
@@ -241,29 +63,106 @@ double get_symbol(char *name){
 %token <cval> CHAR_LITERAL
 %token <sval> IDENTIFIER
 
-%type <dval> expression term factor primary condition function_call array_access
+
+%type <node> expression term factor primary condition
+%type <node> function_call array_access
+%type <node> statement statement_list
+%type <node> declaration declaration_no_semi assignment array_assignment
+%type <node> print_stmt scan_stmt
+%type <node> if_stmt else_if_part
+%type <node> switch_stmt case_list case_item case_expr default_item
+%type <node> loop_stmt return_stmt
+%type <node> identifier_list_decls
+%type <node> for_init for_update
+
+%type <node> func_def func_call_expr
+%type <node> param_list param arg_list_opt arg_list
+%type <node> print_end_opt
+%type <ival> ret_type
 
 %type <ival> array_size
 
-%left OR
-%left AND
-%left EQ NEQ
-%left GT LT GE LE
-%left PLUS MINUS
-%left MUL DIV MOD
+
+%left  OR
+%left  AND
+%left  BIT_OR
+%left  BIT_XOR
+%left  BIT_AND
+%left  EQ NEQ
+%left  GT LT GE LE
+%left  SHL SHR
+%left  PLUS MINUS
+%left  MUL DIV MOD
 %right UNARY
 
 %start program
 
 %%
 
+
+
 program
-    : preprocessor_list main_function
+    : preprocessor_list top_level_list
     ;
+
+top_level_list
+    : top_level_list func_def
+    | top_level_list main_function
+    | /* empty */
+    ;
+
+func_def
+    : ret_type IDENTIFIER LPAREN param_list RPAREN LBRACE statement_list RBRACE
+        {
+            /* Register function into the function table at parse time.
+               The body AST is stored by reference — do NOT free it. */
+            ASTNode *def = make_func_def($2, $1, $4, $7);
+            func_define($2, $1, $4, $7);
+            /* def itself is not added to the program tree —
+               the function table holds the body reference */
+           /* (void)def;    suppress unused-variable warning */
+           $$ = def;
+        }
+    ;
+
+ret_type
+    : INT_TYPE      { $$ = 0; current_decl_type = 0; }
+    | FLOAT_TYPE    { $$ = 0; current_decl_type = 0; }
+    | DOUBLE_TYPE   { $$ = 0; current_decl_type = 0; }
+    | CHAR_TYPE     { $$ = 1; current_decl_type = 1; }
+    | BOOL_TYPE     { $$ = 0; current_decl_type = 0; }
+    | VOID_TYPE     { $$ = 2; current_decl_type = 0; }
+    | LONG_TYPE     { $$ = 0; current_decl_type = 0; }
+    | SHORT_TYPE    { $$ = 0; current_decl_type = 0; }
+    | UNSIGNED_TYPE { $$ = 0; current_decl_type = 0; }
+    ;
+param_list
+    : param_list COMMA param
+        {
+            /* append $3 to end of $1 */
+            if ($1 == NULL) { $$ = $3; }
+            else {
+                ASTNode *t = $1;
+                while (t->next) t = t->next;
+                t->next = $3;
+                $$ = $1;
+            }
+        }
+    | param         { $$ = $1; }
+    | /* empty */   { $$ = NULL; }
+    ;
+
+param
+    : type IDENTIFIER
+        {
+            $$ = make_param($2, current_decl_type);
+        }
+    ;
+
 
 preprocessor_list
     : preprocessor_list preprocessor
-    |
+    | /* empty */
     ;
 
 preprocessor
@@ -273,432 +172,634 @@ preprocessor
 
 main_function
     : MAIN LPAREN RPAREN LBRACE statement_list RBRACE
+        {
+            /* Build program root and immediately interpret it */
+            ASTNode *prog = make_node(NODE_PROGRAM);
+            prog->left = $5;
+
+            FILE *ast_out = fopen("ast.txt", "w");
+            if (ast_out) {
+                print_ast_file(prog, 0, ast_out);
+                fclose(ast_out);
+            } else {
+                fprintf(stderr, "Warning: could not open ast.txt for writing.\n");
+            }
+
+            if(sem_analyse(prog) != 0){
+                fprintf(stderr, "Aborting due to semantic error. \n");
+                free_ast(prog);
+                YYABORT;
+            }
+            interpret(prog);
+            free_ast(prog);
+        }
     ;
+
+
 
 statement_list
     : statement_list statement
-    |
+        {
+            /* Append $2 to the end of the $1 list.
+               We use a right-growing list: walk to the tail and link. */
+            if ($1 == NULL) {
+                $$ = $2;
+            } else if ($2 == NULL) {
+                $$ = $1;
+            } else {
+                /* find tail of $1 */
+                ASTNode *tail = $1;
+                while (tail->next) tail = tail->next;
+                tail->next = $2;
+                $$ = $1;
+            }
+        }
+    | /* empty */ { $$ = NULL; }
     ;
 
 statement
-    : declaration
-    | assignment SEMI
-    | array_assignment SEMI
-    | print_stmt
-    | scan_stmt
-    | if_stmt
-    | switch_stmt
-    | BREAK SEMI  { if(execute_flag) break_flag = 1; }
-    | loop_stmt
-    | return_stmt SEMI
+    : declaration          { $$ = $1; }
+    | assignment SEMI      { $$ = $1; }
+    | INCREMENT IDENTIFIER SEMI
+        {
+            ASTNode *n = make_node(NODE_INCREMENT);
+            n->sval = strdup($2);
+            $$ = n;
+        }
+    | DECREMENT IDENTIFIER SEMI
+        {
+            ASTNode *n = make_node(NODE_DECREMENT);
+            n->sval = strdup($2);
+            $$ = n;
+        }
+    | array_assignment SEMI { $$ = $1; }
+    | print_stmt           { $$ = $1; }
+    | scan_stmt            { $$ = $1; }
+    | if_stmt              { $$ = $1; }
+    | switch_stmt          { $$ = $1; }
+    | BREAK SEMI
+        {
+            $$ = make_node(NODE_BREAK);
+        }
+    | CONTINUE SEMI
+        {
+            $$ = make_node(NODE_CONTINUE);
+        }
+    | loop_stmt            { $$ = $1; }
+    | return_stmt SEMI     { $$ = $1; }
+    | func_call_expr SEMI    { $$ = $1; }
+    | RETURN SEMI    { $$ = make_return_void(); }
     ;
 
+
+
 declaration
-    : type identifier_list SEMI
-        { /* handled in identifier_list actions */ }
+    : type identifier_list_decls SEMI
+        { $$ = $2; }
     | type IDENTIFIER LBRACKET array_size RBRACKET SEMI
-        { if(execute_flag) declare_array($2,$4); }
+        {
+            ASTNode *n = make_node(NODE_DECL_ARRAY);
+            n->sval      = strdup($2);
+            n->cols      = $4;   /* size stored in cols */
+            n->decl_type = current_decl_type;
+            $$ = n;
+        }
     | type IDENTIFIER LBRACKET array_size RBRACKET LBRACKET array_size RBRACKET SEMI
-    { 
-        if(execute_flag)
-            declare_2d_array($2,$4,$7); 
-    }
+        {
+            ASTNode *n = make_node(NODE_DECL_ARRAY_2D);
+            n->sval      = strdup($2);
+            n->rows      = $4;
+            n->cols      = $7;
+            n->decl_type = current_decl_type;
+            $$ = n;
+        }
+    ;
+
+/* for loop declarations (without trailing semicolon) */
+declaration_no_semi
+    : type IDENTIFIER
+        {
+            ASTNode *n = make_node(NODE_DECL);
+            n->sval      = strdup($2);
+            n->left      = NULL;
+            n->decl_type = current_decl_type;
+            $$ = n;
+        }
+    | type IDENTIFIER ASSIGN expression
+        {
+            ASTNode *n = make_node(NODE_DECL);
+            n->sval      = strdup($2);
+            n->left      = $4;
+            n->decl_type = current_decl_type;
+            $$ = n;
+        }
     ;
 
 array_size
-    : INT_LITERAL { $$=$1; }
+    : INT_LITERAL { $$ = $1; }
     ;
 
 type
-    : INT_TYPE          { current_decl_type = 0; }
-    | FLOAT_TYPE        { current_decl_type = 0; }
-    | DOUBLE_TYPE       { current_decl_type = 0; }
-    | CHAR_TYPE         { current_decl_type = 1; }
-    | BOOL_TYPE         { current_decl_type = 0; }
-    | VOID_TYPE         { current_decl_type = 0; }
-    | LONG_TYPE         { current_decl_type = 0; }
-    | SHORT_TYPE        { current_decl_type = 0; }
-    | UNSIGNED_TYPE     { current_decl_type = 0; }
+    : INT_TYPE      { current_decl_type = 0; }
+    | FLOAT_TYPE    { current_decl_type = 0; }
+    | DOUBLE_TYPE   { current_decl_type = 0; }
+    | CHAR_TYPE     { current_decl_type = 1; }
+    | BOOL_TYPE     { current_decl_type = 0; }
+    | VOID_TYPE     { current_decl_type = 0; }
+    | LONG_TYPE     { current_decl_type = 0; }
+    | SHORT_TYPE    { current_decl_type = 0; }
+    | UNSIGNED_TYPE { current_decl_type = 0; }
     ;
 
-identifier_list
+
+identifier_list_decls
     : IDENTIFIER
-        { if(execute_flag) set_symbol($1,0); }
+        {
+            ASTNode *n = make_node(NODE_DECL);
+            n->sval      = strdup($1);
+            n->left      = NULL;   /* no initialiser */
+            n->decl_type = current_decl_type;
+            $$ = n;
+        }
     | IDENTIFIER ASSIGN expression
-        { if(execute_flag) set_symbol($1,$3); }
-    | IDENTIFIER COMMA identifier_list
-        { if(execute_flag) set_symbol($1,0); }
-    | IDENTIFIER ASSIGN expression COMMA identifier_list
-        { if(execute_flag) set_symbol($1,$3); }
+        {
+            ASTNode *n = make_node(NODE_DECL);
+            n->sval      = strdup($1);
+            n->left      = $3;
+            n->decl_type = current_decl_type;
+            $$ = n;
+        }
+    | IDENTIFIER COMMA identifier_list_decls
+        {
+            ASTNode *n = make_node(NODE_DECL);
+            n->sval      = strdup($1);
+            n->left      = NULL;
+            n->decl_type = current_decl_type;
+            n->next      = $3;
+            $$ = n;
+        }
+    | IDENTIFIER ASSIGN expression COMMA identifier_list_decls
+        {
+            ASTNode *n = make_node(NODE_DECL);
+            n->sval      = strdup($1);
+            n->left      = $3;
+            n->decl_type = current_decl_type;
+            n->next      = $5;
+            $$ = n;
+        }
     ;
+
 
 assignment
     : IDENTIFIER ASSIGN expression
-        { if(execute_flag) set_symbol($1,$3); }
+        {
+            ASTNode *n = make_node(NODE_ASSIGN);
+            n->sval = strdup($1);
+            n->left = $3;
+            $$ = n;
+        }
     ;
 
 array_assignment
     : IDENTIFIER LBRACKET expression RBRACKET ASSIGN expression
-        { if(execute_flag) set_array_element($1,(int)$3,$6); }
+        {
+            ASTNode *n = make_node(NODE_ARRAY_ASSIGN);
+            n->sval  = strdup($1);
+            n->left  = $3;   /* index  */
+            n->right = $6;   /* value  */
+            $$ = n;
+        }
     | IDENTIFIER LBRACKET expression RBRACKET LBRACKET expression RBRACKET ASSIGN expression
-        { if(execute_flag) set_array2d_element($1,(int)$3,(int)$6,$9); }
+        {
+            ASTNode *n = make_node(NODE_ARRAY_ASSIGN_2D);
+            n->sval  = strdup($1);
+            n->left  = $3;   /* row   */
+            n->right = $6;   /* col   */
+            n->extra = $9;   /* value */
+            $$ = n;
+        }
     ;
 
-/* ---------------- EXPRESSIONS ---------------- */
 
 expression
-    : expression PLUS term   { $$=$1+$3; }
-    | expression MINUS term  { $$=$1-$3; }
-    | MINUS term %prec UNARY { $$=-$2; }
-    | term                   { $$=$1; }
+    : expression PLUS term   { $$ = make_binop(NODE_ADD, $1, $3); }
+    | expression MINUS term  { $$ = make_binop(NODE_SUB, $1, $3); }
+    | expression AND term         { $$ = make_binop(NODE_AND, $1, $3); }
+    | expression OR term          { $$ = make_binop(NODE_OR, $1, $3); }
+    | expression BIT_OR term      { $$ = make_binop(NODE_BIT_OR, $1, $3); }
+    | expression BIT_XOR term     { $$ = make_binop(NODE_BIT_XOR, $1, $3); }
+    | expression BIT_AND term     { $$ = make_binop(NODE_BIT_AND, $1, $3); }
+    | expression SHL term         { $$ = make_binop(NODE_SHL, $1, $3); }
+    | expression SHR term         { $$ = make_binop(NODE_SHR, $1, $3); }
+    | MINUS term %prec UNARY { $$ = make_unary(NODE_NEGATE, $2); }
+    | NOT term %prec UNARY        { $$ = make_unary(NODE_NOT, $2); }
+    | BIT_NOT term %prec UNARY    { $$ = make_unary(NODE_BIT_NOT, $2); }
+    | term                   { $$ = $1; }
     ;
 
 term
-    : term MUL factor   { $$=$1*$3; }
-    | term DIV factor   { if($3!=0) $$=$1/$3; else {yyerror("Division by zero"); $$=0;} }
-    | term MOD factor   { if((int)$3!=0) $$=(int)$1%(int)$3; else {yyerror("Modulo by zero"); $$=0;} }
-    | factor            { $$=$1; }
+    : term MUL factor   { $$ = make_binop(NODE_MUL, $1, $3); }
+    | term DIV factor   { $$ = make_binop(NODE_DIV, $1, $3); }
+    | term MOD factor   { $$ = make_binop(NODE_MOD, $1, $3); }
+    | factor            { $$ = $1; }
     ;
 
 factor
-    : primary           { $$=$1; }
+    : primary { $$ = $1; }
     ;
 
 primary
-    : IDENTIFIER        { $$=get_symbol($1); }
-    | INT_LITERAL       { $$=$1; }
-    | FLOAT_LITERAL     { $$=$1; }
-    | TRUE_LITERAL      { $$=1; }
-    | FALSE_LITERAL     { $$=0; }
-    | CHAR_LITERAL      { $$ = $1; }
-    | LPAREN expression RPAREN { $$=$2; }
-    | function_call     { $$=$1; }
-    | array_access      { $$=$1; }
+    : IDENTIFIER        { $$ = make_ident($1); }
+    | INT_LITERAL       { $$ = make_int_lit($1); }
+    | FLOAT_LITERAL     { $$ = make_float_lit((double)$1); }
+    | TRUE_LITERAL      { $$ = make_bool_lit(1); }
+    | FALSE_LITERAL     { $$ = make_bool_lit(0); }
+    | CHAR_LITERAL      { $$ = make_char_lit($1); }
+    | LPAREN expression RPAREN { $$ = $2; }
+    | function_call     { $$ = $1; }
+    | array_access      { $$ = $1; }
+    | func_call_expr    { $$ = $1; }
+    ;
+
+func_call_expr
+    : IDENTIFIER LPAREN arg_list_opt RPAREN
+        {
+            $$ = make_func_call($1, $3);
+        }
+    ;
+
+arg_list_opt
+    : arg_list   { $$ = $1; }
+    | /* empty */ { $$ = NULL; }
+    ;
+
+arg_list
+    : arg_list COMMA expression
+        {
+            ASTNode *a = make_arg_list($3, NULL);
+            /* append to end */
+            if ($1 == NULL) { $$ = a; }
+            else {
+                ASTNode *t = $1;
+                while (t->next) t = t->next;
+                t->next = a;
+                $$ = $1;
+            }
+        }
+    | expression
+        {
+            $$ = make_arg_list($1, NULL);
+        }
     ;
 
 array_access
     : IDENTIFIER LBRACKET expression RBRACKET
-        { $$=get_array_element($1,(int)$3); }
+        { $$ = make_array_access($1, $3); }
     | IDENTIFIER LBRACKET expression RBRACKET LBRACKET expression RBRACKET
-        { $$ = get_array2d_element($1,(int)$3,(int)$6); }
+        { $$ = make_array_access_2d($1, $3, $6); }
     ;
 
-/* ---------------- FUNCTIONS ---------------- */
 
 function_call
     : POW LPAREN expression COMMA expression RPAREN
-        { $$=pow($3,$5); }
+        { $$ = make_func2(NODE_POW, $3, $5); }
     | SQRT LPAREN expression RPAREN
-        { $$=sqrt($3); }
+        { $$ = make_func1(NODE_SQRT, $3); }
     | ABS LPAREN expression RPAREN
-        { $$=fabs($3); }
+        { $$ = make_func1(NODE_ABS, $3); }
     | FLOOR LPAREN expression RPAREN
-        { $$=floor($3); }
+        { $$ = make_func1(NODE_FLOOR, $3); }
     | CEIL LPAREN expression RPAREN
-        { $$=ceil($3); }
+        { $$ = make_func1(NODE_CEIL, $3); }
     ;
 
-/* ---------------- PRINT ---------------- */
 
 print_stmt
-    : PRINT LPAREN STRING_LITERAL RPAREN SEMI
-        { if(execute_flag) { 
-            char *s = $3;
-            if(s[0]=='"') s++;
-            int len = strlen(s);
-            if(len>0 && s[len-1]=='"') s[len-1]='\0';
-            printf("%s\n",s); 
-          }
+    : PRINT LPAREN STRING_LITERAL print_end_opt RPAREN SEMI
+        {
+            ASTNode *n = make_node(NODE_PRINT);
+            n->sval = strdup($3);   /* string literal */
+            n->left = NULL;         /* marks this as a string-literal print */
+            n->extra = $4;
+            $$ = n;
         }
-    | PRINT LPAREN IDENTIFIER RPAREN SEMI
-        { if(execute_flag) {
-            int t = get_symbol_type($3);
-            double v = get_symbol($3);
-            if(t == 1) printf("%c\n", (int)v);
-            else printf("%g\n", v);
-          }
+    | PRINT LPAREN expression print_end_opt RPAREN SEMI
+        {
+            /* Handle both identifier and expression cases */
+            ASTNode *n = make_node(NODE_PRINT);
+            
+            /* Check if expression is just an identifier */
+            if ($3->type == NODE_IDENT) {
+                /* It's an identifier - print variable */
+                n->sval = strdup($3->sval);
+                n->left = $3;  /* Keep the identifier node */
+            } else {
+                /* It's a complex expression */
+                n->sval = NULL;
+                n->left = $3;
+            }
+            n->extra = $4;
+            $$ = n;
         }
-    | PRINT LPAREN expression RPAREN SEMI
-        { if(execute_flag) printf("%g\n",$3); }
+    | PRINT LPAREN print_end_opt RPAREN SEMI
+        {
+            ASTNode *n = make_node(NODE_PRINT);
+            n->sval = NULL;
+            n->left = NULL;
+            n->extra = $3;
+            $$ = n;
+        }
     ;
 
-/* ---------------- INPUT ---------------- */
-
+print_end_opt
+    : COMMA END ASSIGN STRING_LITERAL
+        {
+            ASTNode *n = make_node(NODE_STRING_LIT);
+            n->sval = strdup($4);
+            $$ = n;
+        }
+    | /* empty */
+        {
+            $$ = NULL;
+        }
+    ;
 scan_stmt
     : SCAN LPAREN IDENTIFIER RPAREN SEMI
         {
-            if(execute_flag) {
-                int t = get_symbol_type($3);
-                if(t == 1) { /* char */
-                    char v;
-                    scanf(" %c", &v);
-                    set_symbol($3, (double)v);
-                } else {
-                    double v;
-                    scanf("%lf",&v);
-                    set_symbol($3,v);
-                }
-            }
+            ASTNode *n = make_node(NODE_SCAN);
+            n->sval = strdup($3);
+            $$ = n;
         }
     | SCAN LPAREN IDENTIFIER LBRACKET expression RBRACKET RPAREN SEMI
         {
-            if(execute_flag) {
-                double v;
-                scanf("%lf",&v);
-                set_array_element($3,(int)$5,v);
-            }
+            ASTNode *n = make_node(NODE_SCAN_ARRAY);
+            n->sval = strdup($3);
+            n->left = $5;   /* index expression */
+            $$ = n;
         }
     ;
 
-/* ---------------- IF ---------------- */
+
+
+condition
+    : expression EQ  expression { $$ = make_binop(NODE_EQ,  $1, $3); }
+    | expression NEQ expression { $$ = make_binop(NODE_NEQ, $1, $3); }
+    | expression GT  expression { $$ = make_binop(NODE_GT,  $1, $3); }
+    | expression LT  expression { $$ = make_binop(NODE_LT,  $1, $3); }
+    | expression GE  expression { $$ = make_binop(NODE_GE,  $1, $3); }
+    | expression LE  expression { $$ = make_binop(NODE_LE,  $1, $3); }
+    ;
+
+
+
 
 if_stmt
-    : IF LPAREN condition RPAREN 
-        { 
-            $<ival>$ = execute_flag;
-            if (execute_flag) {
-                if ($3) {
-                    /* execute this block */
-                } else {
-                    execute_flag = 0;
-                }
-            }
-        }
-      LBRACE statement_list RBRACE
+    : IF LPAREN condition RPAREN LBRACE statement_list RBRACE else_if_part
         {
-            if ($<ival>5) {
-                if ($3) {
-                    execute_flag = 0; /* block ran, skip rest of chain */
-                } else {
-                    execute_flag = 1; /* didn't run, check next block */
-                }
-            } else {
-                execute_flag = 0; /* were already skipping */
-            }
-        }
-      else_if_part
-        { 
-            execute_flag = $<ival>5; 
+            ASTNode *n = make_node(NODE_IF);
+            n->left  = $3;   /* condition  */
+            n->right = $6;   /* then body  */
+            n->extra = $8;   /* else chain */
+            $$ = n;
         }
     ;
 
 else_if_part
-    : ELSEIF LPAREN condition RPAREN 
+    : ELSEIF LPAREN condition RPAREN LBRACE statement_list RBRACE else_if_part
         {
-            /* remember state before this block */
-            $<ival>$ = execute_flag;
-            if (execute_flag) {
-                if ($3) {
-                    /* execute this */
-                } else {
-                    execute_flag = 0;
-                }
-            }
+            ASTNode *n = make_node(NODE_ELSEIF);
+            n->left  = $3;
+            n->right = $6;
+            n->extra = $8;
+            $$ = n;
         }
-      LBRACE statement_list RBRACE
-        {
-            /* state before ELSEIF block is in $<ival>5 */
-            if ($<ival>5) {
-                if ($3) {
-                    execute_flag = 0; /* this ran, skip later parts */
-                } else {
-                    execute_flag = 1; /* this didn't run, search next parts */
-                }
-            } else {
-                execute_flag = 0; /* were already skipping whole chain */
-            }
-        }
-      else_if_part 
     | ELSE LBRACE statement_list RBRACE
-    | /* empty */
+        {
+            ASTNode *n = make_node(NODE_ELSE);
+            n->left = $3;
+            $$ = n;
+        }
+    | /* empty */ { $$ = NULL; }
     ;
 
-    /* ===================== SWITCH-CASE ===================== */
+
+
 
 switch_stmt
-    : SWITCH LPAREN expression RPAREN
+    : SWITCH LPAREN expression RPAREN LBRACE case_list RBRACE
         {
-            /*
-             * Push a new frame onto the switch stack.
-             * outer_exec = current execute_flag so we can
-             * restore it exactly when the switch ends.
-             */
-            switch_push($3, execute_flag);
-
-            if (execute_flag) {
-                /* start with execute_flag = 0; each case
-                   will turn it on/off as needed            */
-                execute_flag = 0;
-            } else {
-                /* we are inside a skipped block — mark
-                   the whole switch as already done so
-                   every case/default is skipped too        */
-                switch_cur()->done = 1;
-            }
-        }
-      LBRACE case_list RBRACE
-        {
-            /* restore the execution context that was active
-               before this switch statement                  */
-            execute_flag = switch_cur()->outer_exec;
-            switch_pop();
-            break_flag = 0;   /* consume any leftover break */
+            ASTNode *n = make_node(NODE_SWITCH);
+            n->left  = $3;   /* switch expression */
+            n->right = $6;   /* case list head    */
+            $$ = n;
         }
     ;
-/* ---- list of case clauses ---- */
+
 case_list
     : case_list case_item
+        {
+            /* append case_item to end of case_list */
+            if ($1 == NULL) { $$ = $2; }
+            else {
+                ASTNode *tail = $1;
+                while (tail->next) tail = tail->next;
+                tail->next = $2;
+                $$ = $1;
+            }
+        }
     | case_list default_item
-    | /* empty */
+        {
+            if ($1 == NULL) { $$ = $2; }
+            else {
+                ASTNode *tail = $1;
+                while (tail->next) tail = tail->next;
+                tail->next = $2;
+                $$ = $1;
+            }
+        }
+    | /* empty */ { $$ = NULL; }
     ;
 
 case_item
-    : CASE case_expr COLON
+    : CASE case_expr COLON statement_list
         {
-            /* case_expr already set execute_flag appropriately */
-        }
-      statement_list
-        {
-            SwitchFrame *f = switch_cur();
-            if (f && break_flag && execute_flag) {
-                f->done      = 1;
-                execute_flag = 0;
-                break_flag   = 0;
+            /*
+             * case_expr is either NODE_CASE or NODE_CASE_RANGE.
+             * We attach the body to whichever node was built.
+             */
+            ASTNode *c = $2;
+            if (c->type == NODE_CASE) {
+                /* left = value expr (already set), right = body */
+                c->right = $4;
+            } else {
+                /* NODE_CASE_RANGE: left=start, right=end, extra=body */
+                c->extra = $4;
             }
+            $$ = c;
         }
     ;
 
 case_expr
     : expression
         {
-            SwitchFrame *f = switch_cur();
-            if (f == NULL) {
-                yyerror("case outside switch");
-                execute_flag = 0;
-            } else if (f->done) {
-                execute_flag = 0;
-            } else if (f->matched) {
-                execute_flag = 1;
-            } else if (fabs(f->value - $1) < SWITCH_EPSILON) {
-                f->matched   = 1;
-                execute_flag = 1;
-            } else {
-                execute_flag = 0;
-            }
+            ASTNode *n = make_node(NODE_CASE);
+            n->left = $1;   /* case value expression */
+            $$ = n;
         }
     | expression RANGE expression
         {
-            SwitchFrame *f = switch_cur();
-            if (f == NULL) {
-                yyerror("case outside switch");
-                execute_flag = 0;
-            } else if (f->done) {
-                execute_flag = 0;
-            } else if (f->matched) {
-                execute_flag = 1;
-            } else {
-                int start = (int)$1;
-                int end = (int)$3;
-                int val = (int)f->value;
-                
-                if (val >= start && val <= end) {
-                    f->matched   = 1;
-                    execute_flag = 1;
-                } else {
-                    execute_flag = 0;
-                }
-            }
+            ASTNode *n = make_node(NODE_CASE_RANGE);
+            n->left  = $1;  /* range start */
+            n->right = $3;  /* range end   */
+            $$ = n;
         }
     ;
-
 
 default_item
-    : DEFAULT COLON
+    : DEFAULT COLON statement_list
         {
-            SwitchFrame *f = switch_cur();
-            if (f == NULL) {
-                yyerror("default outside switch");
-                execute_flag = 0;
-            } else if (f->done) {
-                /* break was hit earlier */
-                execute_flag = 0;
-            } else if (f->matched) {
-                /* falling through from a previous case (no break) */
-                execute_flag = 1;
-            } else {
-                /* no case matched at all — default is the entry point */
-                execute_flag = 1;
-            }
-        }
-      statement_list
-        {
-            SwitchFrame *f = switch_cur();
-            if (f && break_flag && execute_flag) {
-                f->done      = 1;
-                execute_flag = 0;
-                break_flag   = 0;
-            }
+            ASTNode *n = make_node(NODE_DEFAULT);
+            n->left = $3;   /* body */
+            $$ = n;
         }
     ;
 
-/* ---------------- CONDITION ---------------- */
 
-condition
-    : expression EQ expression { $$=$1==$3; }
-    | expression NEQ expression { $$=$1!=$3; }
-    | expression GT expression { $$=$1>$3; }
-    | expression LT expression { $$=$1<$3; }
-    | expression GE expression { $$=$1>=$3; }
-    | expression LE expression { $$=$1<=$3; }
+
+for_init
+    : assignment { $$ = $1; }
+    | declaration_no_semi { $$ = $1; }
+    | /* empty */ { $$ = NULL; }
     ;
 
-/* ---------------- LOOPS ---------------- */
+for_update
+    : assignment { $$ = $1; }
+    | INCREMENT IDENTIFIER
+        {
+            ASTNode *n = make_node(NODE_INCREMENT);
+            n->sval = strdup($2);
+            $$ = n;
+        }
+    | DECREMENT IDENTIFIER
+        {
+            ASTNode *n = make_node(NODE_DECREMENT);
+            n->sval = strdup($2);
+            $$ = n;
+        }
+    | IDENTIFIER INC
+        {
+            ASTNode *n = make_node(NODE_INCREMENT);
+            n->sval = strdup($1);
+            $$ = n;
+        }
+    | IDENTIFIER DEC
+        {
+            ASTNode *n = make_node(NODE_DECREMENT);
+            n->sval = strdup($1);
+            $$ = n;
+        }
+    | INC IDENTIFIER
+        {
+            ASTNode *n = make_node(NODE_INCREMENT);
+            n->sval = strdup($2);
+            $$ = n;
+        }
+    | DEC IDENTIFIER
+        {
+            ASTNode *n = make_node(NODE_DECREMENT);
+            n->sval = strdup($2);
+            $$ = n;
+        }
+    | /* empty */ { $$ = NULL; }
+    ;
 
 loop_stmt
     : WHILE LPAREN condition RPAREN LBRACE statement_list RBRACE
-        { 
-            /* Note: Due to parser limitations, loops execute once per parse.
-               For proper loop execution, use the for-loop pattern with arrays. */
+        {
+            ASTNode *n = make_node(NODE_WHILE);
+            n->left  = $3;   /* condition */
+            n->right = $6;   /* body      */
+            $$ = n;
         }
-    | FOR LPAREN assignment SEMI condition SEMI assignment RPAREN
+     | DO LBRACE statement_list RBRACE WHILE LPAREN condition RPAREN SEMI
+        {
+            ASTNode *n = make_node(NODE_DO_WHILE);
+            n->left  = $3;   /* body      */
+            n->right = $7;   /* condition */
+            $$ = n;
+        }
+    | FOR LPAREN for_init SEMI condition SEMI for_update RPAREN
       LBRACE statement_list RBRACE
-        { 
-            /* Note: Due to parser limitations, loops execute once per parse.
-               For proper loop execution, process arrays with multiple statements. */
+        {
+            /* pack condition + update into a helper node */
+            ASTNode *parts = make_node(NODE_STMT_LIST);
+            parts->left  = $5;   /* condition */
+            parts->right = $7;   /* update    */
+
+            ASTNode *n = make_node(NODE_FOR);
+            n->left  = $3;      /* init  */
+            n->right = $10;     /* body  */
+            n->extra = parts;   /* parts */
+            $$ = n;
+        }
+    | FOR IDENTIFIER IN LPAREN expression RANGE expression RPAREN
+      LBRACE statement_list RBRACE
+        {
+            ASTNode *n = make_node(NODE_FOR_RANGE);
+            n->sval  = strdup($2);       /* loop variable name */
+            n->left  = $5;              /* start expression   */
+            n->right = $10;             /* body               */
+            n->extra = $7;              /* end expression     */
+            $$ = n;
+        }
+    | FOR IDENTIFIER IN LPAREN expression RANGE expression COMMA expression RPAREN
+      LBRACE statement_list RBRACE
+        {
+            /* pack end + step into a helper node */
+            ASTNode *parts = make_node(NODE_STMT_LIST);
+            parts->left  = $7;   /* end  */
+            parts->right = $9;   /* step */
+
+            ASTNode *n = make_node(NODE_FOR_RANGE_STEP);
+            n->sval  = strdup($2);   /* loop variable name */
+            n->left  = $5;           /* start              */
+            n->right = $12;          /* body               */
+            n->extra = parts;        /* end + step         */
+            $$ = n;
         }
     ;
 
+
+
 return_stmt
     : RETURN expression
-        { if(execute_flag) printf("Program returned: %g\n",$2); }
+        {
+            ASTNode *n = make_node(NODE_RETURN);
+            n->left = $2;
+            $$ = n;
+        }
     ;
 
 %%
 
-void yyerror(const char *s){
-    printf("Syntax Error at line %d: %s\n",yylineno,s);
+
+void yyerror(const char *s) {
+    fprintf(stderr, "Syntax error at line %d: %s\n", yylineno, s);
 }
 
 extern FILE *yyin;
 
-int main(int argc, char *argv[]){
-    char *filename = (argc > 1) ? argv[1] : "input.txt";
-    FILE *fp=fopen(filename,"r");
-
-    if(!fp){
-        printf("Cannot open input file: %s\n", filename);
+int main(int argc, char *argv[]) {
+    const char *filename = (argc > 1) ? argv[1] : "input.txt";
+    FILE *fp = fopen(filename, "r");
+    if (!fp) {
+        fprintf(stderr, "Cannot open input file: %s\n", filename);
         return 1;
     }
-
-    yyin=fp;
-
+    yyin = fp;
     printf("Running Luminix Program...\n\n");
-
     yyparse();
-
     printf("\nProgram finished.\n");
-
+    fclose(fp);
     return 0;
 }
-
-

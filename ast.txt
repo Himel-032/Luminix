@@ -1,0 +1,173 @@
+[PROGRAM]
+  [DECL] a (type=0)
+    [INT_LIT] 10
+  [DECL] b (type=0)
+    [INT_LIT] 20
+  [DECL] c (type=0)
+  [DECL] x (type=0)
+    [FLOAT_LIT] 5.5
+  [DECL] y (type=0)
+    [FLOAT_LIT] 2.345
+  [DECL] ch (type=1)
+  [ASSIGN] ch
+    [CHAR_LIT] 'A'
+  [DECL] flag (type=0)
+    [BOOL_LIT] false
+  [ASSIGN] c
+    [ADD]
+      [IDENT] a
+      [IDENT] b
+  [PRINT] "Value of a:"
+  [PRINT] a
+    [IDENT] a
+  [PRINT] "Value of b:"
+  [PRINT] b
+    [IDENT] b
+  [PRINT] "Value of c:"
+  [PRINT] c
+    [IDENT] c
+  [PRINT] "Value of x:"
+  [PRINT] x
+    [IDENT] x
+  [PRINT] "Value of y:"
+  [PRINT] y
+    [IDENT] y
+  [PRINT] "Character value:"
+  [PRINT] ch
+    [IDENT] ch
+  [PRINT] "Boolean flag:"
+  [PRINT] flag
+    [IDENT] flag
+  [DECL] exp1 (type=0)
+  [DECL] exp2 (type=0)
+  [ASSIGN] exp1
+    [ADD]
+      [MUL]
+        [IDENT] a
+        [IDENT] b
+      [INT_LIT] 5
+  [ASSIGN] exp2
+    [MUL]
+      [ADD]
+        [IDENT] a
+        [IDENT] b
+      [INT_LIT] 2
+  [PRINT] "Expression 1 result:"
+  [PRINT] exp1
+    [IDENT] exp1
+  [PRINT] "Expression 2 result:"
+  [PRINT] exp2
+    [IDENT] exp2
+  [DECL] powerVal (type=0)
+  [DECL] rootVal (type=0)
+  [DECL] absVal (type=0)
+  [ASSIGN] powerVal
+    [POW]
+      [INT_LIT] 2
+      [INT_LIT] 3
+  [ASSIGN] rootVal
+    [SQRT]
+      [INT_LIT] 16
+  [ASSIGN] absVal
+    [ABS]
+      [NEGATE]
+        [INT_LIT] 25
+  [PRINT] "Power value:"
+  [PRINT] powerVal
+    [IDENT] powerVal
+  [PRINT] "Root value:"
+  [PRINT] rootVal
+    [IDENT] rootVal
+  [PRINT] "Absolute value:"
+  [PRINT] absVal
+    [IDENT] absVal
+  [DECL_ARRAY] arr[5] (type=0)
+  [ARRAY_ASSIGN] arr
+    [INT_LIT] 0
+    [INT_LIT] 5
+  [ARRAY_ASSIGN] arr
+    [INT_LIT] 1
+    [INT_LIT] 10
+  [ARRAY_ASSIGN] arr
+    [INT_LIT] 2
+    [INT_LIT] 15
+  [ARRAY_ASSIGN] arr
+    [INT_LIT] 3
+    [INT_LIT] 20
+  [ARRAY_ASSIGN] arr
+    [INT_LIT] 4
+    [INT_LIT] 25
+  [PRINT] "Array element 0:"
+  [PRINT]
+    [ARRAY_ACCESS] arr
+      [INT_LIT] 0
+  [PRINT] "Array element 1:"
+  [PRINT]
+    [ARRAY_ACCESS] arr
+      [INT_LIT] 1
+  [PRINT] "Array element 2:"
+  [PRINT]
+    [ARRAY_ACCESS] arr
+      [INT_LIT] 2
+  [PRINT] "Array element 3:"
+  [PRINT]
+    [ARRAY_ACCESS] arr
+      [INT_LIT] 3
+  [PRINT] "Array element 4:"
+  [PRINT]
+    [ARRAY_ACCESS] arr
+      [INT_LIT] 4
+  [DECL] sum (type=0)
+  [ASSIGN] sum
+    [ADD]
+      [ADD]
+        [ARRAY_ACCESS] arr
+          [INT_LIT] 0
+        [ARRAY_ACCESS] arr
+          [INT_LIT] 1
+      [ARRAY_ACCESS] arr
+        [INT_LIT] 2
+  [PRINT] "Array sum:"
+  [PRINT] sum
+    [IDENT] sum
+  [DECL_ARRAY_2D] matrix[2][3]
+  [ARRAY_ASSIGN_2D] matrix
+    [INT_LIT] 0
+    [INT_LIT] 0
+    [INT_LIT] 1
+  [ARRAY_ASSIGN_2D] matrix
+    [INT_LIT] 0
+    [INT_LIT] 1
+    [INT_LIT] 2
+  [ARRAY_ASSIGN_2D] matrix
+    [INT_LIT] 0
+    [INT_LIT] 2
+    [INT_LIT] 3
+  [ARRAY_ASSIGN_2D] matrix
+    [INT_LIT] 1
+    [INT_LIT] 2
+    [INT_LIT] 20
+  [PRINT]
+    [ARRAY_ACCESS_2D] matrix
+      [INT_LIT] 0
+      [INT_LIT] 1
+  [PRINT]
+    [ARRAY_ACCESS_2D] matrix
+      [INT_LIT] 1
+      [INT_LIT] 2
+  [PRINT] "Program finished successfully"
+  [DECL] m (type=0)
+    [INT_LIT] 10
+  [PRINT] m
+    [IDENT] m
+  [DECL] n (type=0)
+  [SCAN] n
+  [PRINT] n
+    [IDENT] n
+  [PRINT] "______"
+  [DECL] l (type=1)
+  [SCAN] l
+  [PRINT] l
+    [IDENT] l
+  [RETURN]
+    [INT_LIT] 0
