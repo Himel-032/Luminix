@@ -1,10 +1,167 @@
 #Attach <stdio.h>
+#Suppose LIMIT 10
 
-StartExam(){
-Repeat(Number i = 0; i<5;  i= i+1 ){
-        Show(i);
+
+
+Number add(Number x, Number y){
+    Return x + y;
 }
 
+Decimal avg3(Decimal a, Decimal b, Decimal c){
+    Return (a + b + c) / 3;
+}
+
+Nothing printBanner(){
+    Show("Luminix Full Feature Demo", End="\n");
+    Return;
+}
+
+Number factorial(Number n){
+    Number i = 1, result = 1;
+    Repeat(i = 1; i <= n; i++){
+        result = result * i;
+    }
+    Return result;
+}
+
+StartExam(){
+    Number a = 5, b = 3, c;
+    Decimal d = 3.5;
+    LargeDecimal ld = 9.75;
+    Letter ch = 'Z';
+    TrueFalse flag = True;
+    BigNumber big = 100000;
+    SmallNumber small = 7;
+    Positive pos = 12;
+
+    Number arr[5];
+    Number mat[2][3];
+
+    arr[0] = 10;
+    arr[1] = 20;
+    arr[2] = a + b;
+    arr[3] = Power(2, 4);
+
+    mat[0][0] = 1;
+    mat[0][1] = 2;
+    mat[0][2] = 3;
+    mat[1][0] = 4;
+    mat[1][1] = 5;
+    mat[1][2] = 6;
+
+    Show("Enter a value for arr[4]: ", End="");
+    Take(arr[4]);
+    Show("Enter a value for c: ", End="");
+    Take(c);
+
+    printBanner();
+
+    c = add(a, b);
+    Number fact = factorial(5);
+    Decimal mean = avg3(1.2, 2.4, 3.6);
+
+    Number p = Power(2, 3);
+    Number r = Root(81);
+    Number absv = Absolute(-15);
+    Number fl = Floor(3.9);
+    Number ce = Ceil(3.1);
+
+    Number bitA = 6, bitB = 3;
+    Number bitAnd = bitA & bitB;
+    Number bitOr = bitA | bitB;
+    Number bitXor = bitA ^ bitB;
+    Number leftShift = bitA << 1;
+    Number rightShift = bitA >> 1;
+    Number bitNot = ~bitA;
+    Number logicAnd = a && b;
+    Number logicOr = 0 || b;
+    Number logicalNot = !0;
+
+    Show("Values:", End="\n");
+    Show(a);
+    Show(d);
+    Show(ld);
+    Show(ch);
+    Show(flag);
+    Show(big);
+    Show(small);
+    Show(pos);
+    Show(arr[2]);
+    Show(mat[1][2]);
+    Show(c);
+    Show(fact);
+    Show(mean);
+    Show(p);
+    Show(r);
+    Show(absv);
+    Show(fl);
+    Show(ce);
+    Show(bitAnd);
+    Show(bitOr);
+    Show(bitXor);
+    Show(leftShift);
+    Show(rightShift);
+    Show(bitNot);
+    Show(logicAnd);
+    Show(logicOr);
+    Show(logicalNot);
+
+    Check(a > b){
+        Show("a is greater than b", End="\n");
+    }
+    ElseCheck(a == b){
+        Show("a equals b", End="\n");
+    }
+    Otherwise{
+        Show("a is less than b", End="\n");
+    }
+
+    Choose(c){
+        Option 1:
+            Show("c is 1", End="\n");
+            Stop;
+        Option 2..5:
+            Show("c is in range 2..5", End="\n");
+            Stop;
+        DefaultOption:
+            Show("c matched default", End="\n");
+    }
+
+    WhileStudy(a < 10){
+        Increment a;
+        Check(a == 7){
+            Skip;
+        }
+        Show(a);
+        Check(a >= 9){
+            Stop;
+        }
+    }
+
+    DoOnce{
+        Decrement b;
+        Show(b);
+    }WhileStudy(b > 0);
+
+    Repeat(Number i = 0; i < 6; i++){
+        Check(i == 2){
+            Skip;
+        }
+        Check(i == 5){
+            Stop;
+        }
+        Show(i);
+    }
+
+    Repeat i in (1..4){
+        Show(i);
+    }
+
+    Repeat j in (0..10,2){
+        Show(j);
+    }
+
+    Show();
     Return 0;
 }
 

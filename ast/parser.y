@@ -176,7 +176,7 @@ main_function
             /* Build program root and immediately interpret it */
             ASTNode *prog = make_node(NODE_PROGRAM);
             prog->left = $5;
-/*
+
             FILE *ast_out = fopen("ast.txt", "w");
             if (ast_out) {
                 print_ast_file(prog, 0, ast_out);
@@ -184,7 +184,7 @@ main_function
             } else {
                 fprintf(stderr, "Warning: could not open ast.txt for writing.\n");
             }
-*/
+
             if(sem_analyse(prog) != 0){
                 fprintf(stderr, "Aborting due to semantic error. \n");
                 free_ast(prog);
@@ -674,6 +674,42 @@ for_init
 
 for_update
     : assignment { $$ = $1; }
+    | INCREMENT IDENTIFIER
+        {
+            ASTNode *n = make_node(NODE_INCREMENT);
+            n->sval = strdup($2);
+            $$ = n;
+        }
+    | DECREMENT IDENTIFIER
+        {
+            ASTNode *n = make_node(NODE_DECREMENT);
+            n->sval = strdup($2);
+            $$ = n;
+        }
+    | IDENTIFIER INC
+        {
+            ASTNode *n = make_node(NODE_INCREMENT);
+            n->sval = strdup($1);
+            $$ = n;
+        }
+    | IDENTIFIER DEC
+        {
+            ASTNode *n = make_node(NODE_DECREMENT);
+            n->sval = strdup($1);
+            $$ = n;
+        }
+    | INC IDENTIFIER
+        {
+            ASTNode *n = make_node(NODE_INCREMENT);
+            n->sval = strdup($2);
+            $$ = n;
+        }
+    | DEC IDENTIFIER
+        {
+            ASTNode *n = make_node(NODE_DECREMENT);
+            n->sval = strdup($2);
+            $$ = n;
+        }
     | /* empty */ { $$ = NULL; }
     ;
 

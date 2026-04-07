@@ -308,8 +308,16 @@ void exec_stmt(ASTNode *n) {
                     printf("%s", s);
                 }
             } else if (n->left) {
-               
-                printf("%g", eval_expr(n->left));
+                // printf("%g", eval_expr(n->left));
+                /* Check if expression is array access to determine type */
+                int expr_type = 0; /* default numeric */
+                if (n->left->type == NODE_ARRAY_ACCESS || n->left->type == NODE_ARRAY_ACCESS_2D) {
+                    expr_type = sym_get_type(n->left->sval);
+                }
+                
+                double v = eval_expr(n->left);
+                if (expr_type == 1) printf("%c", (int)v);
+                else                printf("%g", v);
             }
            
             printf("%s", end_str);
