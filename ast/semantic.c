@@ -1,18 +1,4 @@
-/* =========================================================
- *  semantic.c  –  Semantic Analysis implementation
- *
- *  Single-pass AST walk that checks:
- *    1. Variable declared before use
- *    2. No redeclaration in the same scope
- *    3. Function declared before call
- *    4. Argument count matches parameter count
- *    5. Type compatibility (numeric vs char assignments)
- *    6. Return value present/absent matches function ret_type
- *    7. break / continue only inside a loop or switch
- *    8. Array vs scalar access consistency
- *    9. Division by zero (literal-level only)
- *   10. Void function result used in an expression
- * ========================================================= */
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,40 +9,36 @@
 #include "ast.h"
 #include "symtab.h"
 
-/* =========================================================
- *  Internal state
- * ========================================================= */
 
-/* ---------- scoped symbol table ---------- */
+
+
 #define SEM_SYM_MAX   1024
 #define SEM_SCOPE_MAX   64
 
 static SemSymbol sem_syms[SEM_SYM_MAX];
 static int       sem_sym_count = 0;
 
-/* scope stack: each entry stores the symcount at scope entry */
+
 static int sem_scope_stack[SEM_SCOPE_MAX];
 static int sem_scope_top = 0;
 
-/* ---------- function table ---------- */
+
 #define SEM_FUNC_MAX 200
 static SemFunc sem_funcs[SEM_FUNC_MAX];
 static int     sem_func_count = 0;
 
-/* ---------- context flags ---------- */
-static int inside_loop   = 0;   /* depth counter for loops   */
-static int inside_switch = 0;   /* depth counter for switch  */
 
-/* current function being analysed (NULL at top level) */
+static int inside_loop   = 0;   
+static int inside_switch = 0;   
+
+
 static SemFunc *current_func = NULL;
 
-/* ---------- public counters ---------- */
+
 int sem_error_count   = 0;
 int sem_warning_count = 0;
 
-/* =========================================================
- *  Helpers: error / warning reporters
- * ========================================================= */
+
 
 static void sem_error(int line, const char *fmt, ...)
 {
@@ -86,9 +68,7 @@ static void sem_warning(int line, const char *fmt, ...)
     sem_warning_count++;
 }
 
-/* =========================================================
- *  Scope management
- * ========================================================= */
+
 
 static void scope_push(void)
 {
@@ -105,11 +85,9 @@ static void scope_pop(void)
     sem_sym_count = sem_scope_stack[--sem_scope_top];
 }
 
-/* =========================================================
- *  Symbol-table helpers
- * ========================================================= */
 
-/* Look up a symbol in ALL visible scopes (top-down). */
+
+
 static SemSymbol *sym_find_visible(const char *name)
 {
     for (int i = sem_sym_count - 1; i >= 0; i--)
@@ -154,9 +132,7 @@ static void sym_declare(const char *name, int sem_type,
     s->cols       = cols;
 }
 
-/* =========================================================
- *  Function-table helpers
- * ========================================================= */
+
 
 static SemFunc *func_find(const char *name)
 {
@@ -169,11 +145,7 @@ static SemFunc *func_find(const char *name)
 /* Register function signature (first pass). */
 static void func_register(ASTNode *n)
 {
-    /* n->type == NODE_FUNC_DEF
-       n->sval  = name
-       n->ret_type = return type (0=numeric,1=char,2=void)
-       n->left  = param list (NODE_PARAM linked via ->next)
-       n->right = body  */
+   
 
     const char *name = n->sval;
 
@@ -203,9 +175,7 @@ static void func_register(ASTNode *n)
     }
 }
 
-/* =========================================================
- *  Forward declarations for mutual recursion
- * ========================================================= */
+
 static int  check_expr (ASTNode *n);   /* returns SEM_TYPE_* */
 static void check_stmt (ASTNode *n);
 static void check_stmts(ASTNode *n);
@@ -218,18 +188,14 @@ static int check_expr_nonvoid(ASTNode *n, int line, const char *ctx)
     }
     return t;
 }
-/* =========================================================
- *  Expression checker
- *  Returns the semantic type of the expression, or
- *  SEM_TYPE_UNKNOWN on error (so callers can continue).
- * ========================================================= */
+
 static int check_expr(ASTNode *n)
 {
     if (!n) return SEM_TYPE_UNKNOWN;
 
     switch (n->type) {
 
-    /* ---- literals ---- */
+   
     case NODE_INT_LIT:
     case NODE_FLOAT_LIT:
     case NODE_BOOL_LIT:
@@ -239,9 +205,9 @@ static int check_expr(ASTNode *n)
         return SEM_TYPE_CHAR;
 
     case NODE_STRING_LIT:
-        return SEM_TYPE_CHAR;   /* treat as char sequence */
+        return SEM_TYPE_CHAR;   
 
-    /* ---- identifier ---- */
+   
     case NODE_IDENT: {
         SemSymbol *s = sym_find_visible(n->sval);
         if (!s) {
@@ -254,7 +220,7 @@ static int check_expr(ASTNode *n)
         return s->sem_type;
     }
 
-    /* ---- 1-D array access ---- */
+   
     case NODE_ARRAY_ACCESS: {
         SemSymbol *s = sym_find_visible(n->sval);
         if (!s) {
@@ -274,7 +240,7 @@ static int check_expr(ASTNode *n)
         return s->sem_type;
     }
 
-    /* ---- 2-D array access ---- */
+   
     case NODE_ARRAY_ACCESS_2D: {
         SemSymbol *s = sym_find_visible(n->sval);
         if (!s) {
@@ -289,7 +255,7 @@ static int check_expr(ASTNode *n)
         return s->sem_type;
     }
 
-    /* ---- arithmetic binary ops ---- */
+  
     case NODE_ADD:
     case NODE_SUB:
     case NODE_MUL:
@@ -322,12 +288,12 @@ static int check_expr(ASTNode *n)
         return SEM_TYPE_NUMERIC;
     }
 
-    /* ---- unary arithmetic ---- */
+   
     case NODE_NEGATE:
         check_expr(n->left);
         return SEM_TYPE_NUMERIC;
 
-    /* ---- comparison ops → always produce numeric (boolean) ---- */
+   
     case NODE_EQ:
     case NODE_NEQ:
     case NODE_GT:
@@ -344,7 +310,7 @@ static int check_expr(ASTNode *n)
         return SEM_TYPE_NUMERIC;
     }
 
-    /* ---- logical ops ---- */
+    
     case NODE_AND:
     case NODE_OR:
         check_expr(n->left);
@@ -355,7 +321,7 @@ static int check_expr(ASTNode *n)
         check_expr(n->left);
         return SEM_TYPE_NUMERIC;
 
-    /* ---- bitwise ops ---- */
+   
     case NODE_BIT_AND:
     case NODE_BIT_OR:
     case NODE_BIT_XOR:
@@ -369,7 +335,7 @@ static int check_expr(ASTNode *n)
         check_expr(n->left);
         return SEM_TYPE_NUMERIC;
 
-    /* ---- built-in math functions ---- */
+    
     case NODE_SQRT:
     case NODE_ABS:
     case NODE_FLOOR:
@@ -382,7 +348,7 @@ static int check_expr(ASTNode *n)
         check_expr(n->right);
         return SEM_TYPE_NUMERIC;
 
-    /* ---- user-defined function call ---- */
+   
     case NODE_FUNC_CALL: {
         SemFunc *f = func_find(n->sval);
         if (!f) {
@@ -418,25 +384,21 @@ static int check_expr(ASTNode *n)
                       n->sval, f->param_count, argc);
         }
 
-        /* Return type of the call expression */
-        if (f->ret_type == 2 /* void */) {
-            /* Caller may be ignoring the void — that is fine as a stmt.
-               If used inside an expression it will be caught by the
-               parent context (e.g. assignment to numeric). */
+        
+        if (f->ret_type == 2 ) {  /* void */
+           
             return SEM_TYPE_VOID;
         }
         return (f->ret_type == 1) ? SEM_TYPE_CHAR : SEM_TYPE_NUMERIC;
     }
 
     default:
-        /* Unknown / unhandled expression node — silently ignore */
+       
         return SEM_TYPE_UNKNOWN;
     }
 }
 
-/* =========================================================
- *  Statement checker
- * ========================================================= */
+
 
 static void check_stmt(ASTNode *n)
 {
@@ -444,12 +406,12 @@ static void check_stmt(ASTNode *n)
 
     switch (n->type) {
 
-    /* ---- statement list ---- */
+    
     case NODE_STMT_LIST:
         check_stmts(n);
         return;
 
-    /* ---- scalar declaration ---- */
+    
     case NODE_DECL: {
         int sem_type = (n->decl_type == 1) ? SEM_TYPE_CHAR : SEM_TYPE_NUMERIC;
         sym_declare(n->sval, sem_type, 0, 0, 0, 0, 0, n->line);
@@ -468,7 +430,7 @@ static void check_stmt(ASTNode *n)
         return;
     }
 
-    /* ---- 1-D array declaration ---- */
+    
     case NODE_DECL_ARRAY: {
         int sem_type = (n->decl_type == 1) ? SEM_TYPE_CHAR : SEM_TYPE_NUMERIC;
         int size     = n->cols;   /* parser stores size in cols */
@@ -479,7 +441,7 @@ static void check_stmt(ASTNode *n)
         return;
     }
 
-    /* ---- 2-D array declaration ---- */
+    
     case NODE_DECL_ARRAY_2D: {
         int sem_type = (n->decl_type == 1) ? SEM_TYPE_CHAR : SEM_TYPE_NUMERIC;
         if (n->rows <= 0 || n->cols <= 0) {
@@ -490,7 +452,7 @@ static void check_stmt(ASTNode *n)
         return;
     }
 
-    /* ---- scalar assignment ---- */
+   
     case NODE_ASSIGN: {
         SemSymbol *s = sym_find_visible(n->sval);
         if (!s) {
@@ -512,7 +474,7 @@ static void check_stmt(ASTNode *n)
         return;
     }
 
-    /* ---- 1-D array assignment ---- */
+  
     case NODE_ARRAY_ASSIGN: {
         SemSymbol *s = sym_find_visible(n->sval);
         if (!s) {
@@ -522,12 +484,12 @@ static void check_stmt(ASTNode *n)
         } else if (s->dimensions == 2) {
             sem_error(n->line, "2-D array '%s' requires two indices for assignment", n->sval);
         }
-        check_expr(n->left);   /* index */
-        check_expr(n->right);  /* value */
+        check_expr(n->left);   
+        check_expr(n->right);  
         return;
     }
 
-    /* ---- 2-D array assignment ---- */
+    
     case NODE_ARRAY_ASSIGN_2D: {
         SemSymbol *s = sym_find_visible(n->sval);
         if (!s) {
@@ -541,13 +503,13 @@ static void check_stmt(ASTNode *n)
         return;
     }
 
-    /* ---- print ---- */
+    
     case NODE_PRINT:
         if (n->left)  check_expr(n->left);
         if (n->right) check_expr(n->right);
         return;
 
-    /* ---- scan ---- */
+   
     case NODE_SCAN: {
         SemSymbol *s = sym_find_visible(n->sval);
         if (!s) {
@@ -565,19 +527,19 @@ static void check_stmt(ASTNode *n)
         } else if (!s->is_array) {
             sem_error(n->line, "'%s' is not an array (scan)", n->sval);
         }
-        check_expr(n->left);   /* index */
+        check_expr(n->left);  
         return;
     }
 
-    /* ---- if / elseif / else ---- */
+    
     case NODE_IF:
     case NODE_ELSEIF: {
-        check_expr(n->left);          /* condition */
+        check_expr(n->left);          
         scope_push();
-        check_stmts(n->right);        /* then-branch */
+        check_stmts(n->right);       
         scope_pop();
         if (n->extra) {
-            check_stmt(n->extra);     /* elseif / else chain */
+            check_stmt(n->extra);     
         }
         return;
     }
@@ -588,14 +550,14 @@ static void check_stmt(ASTNode *n)
         scope_pop();
         return;
 
-    /* ---- switch ---- */
+    
     case NODE_SWITCH: {
         int expr_type = check_expr(n->left);
         if (expr_type == SEM_TYPE_CHAR) {
             sem_warning(n->line, "switch on char expression (numeric value will be used)");
         }
         inside_switch++;
-        check_stmts(n->right);   /* case list */
+        check_stmts(n->right);   
         inside_switch--;
         return;
     }
@@ -645,27 +607,30 @@ static void check_stmt(ASTNode *n)
     }
 
     /* ---- for ---- */
+//     case NODE_FOR: {
+//     scope_push();
+
+//     if (n->left) check_stmt(n->left);               /* init */
+
+//     ASTNode *parts = n->extra;                      /* NODE_STMT_LIST */
+//     if (parts && parts->left) check_expr(parts->left);  /* condition */
+
+//     inside_loop++;
+//     if (n->right) check_stmts(n->right);            /* body */
+//     if (parts && parts->right) check_stmt(parts->right);/* update */
+//     inside_loop--;
+
+//     scope_pop();
+//     return;
+// }
     case NODE_FOR: {
-        /* n->left  = init (declaration or assignment or NULL)
-           n->right = condition expression
-           n->extra = update (assignment or NULL)
-           body is stored as n->extra->next — or if extra is NULL,
-           the parser hangs the body somewhere; inspect carefully.
-
-           In your parser.y the for layout appears to be:
-             n->left  = for_init
-             n->right = condition
-             n->extra = for_update
-             body     = n->extra ? n->extra->next : separate child
-
-           We open a scope so that a for-init declaration is local. */
+       
         scope_push();
         if (n->left)  check_stmt(n->left);    /* init */
         if (n->right) check_expr(n->right);   /* condition */
 
         inside_loop++;
-        /* body: interpreter.c walks n->extra->next or similar —
-           use the same node the interpreter uses (left of extra?) */
+        
         if (n->extra) {
             /* update expression */
             if (n->extra->type == NODE_ASSIGN ||
@@ -675,11 +640,7 @@ static void check_stmt(ASTNode *n)
                 check_expr(n->extra);
             }
         }
-        /* The body in your AST is the fourth child; the parser stores
-           it as statement list attached via n->extra->next or as a
-           separate extra2.  Because ast.h has only left/right/extra,
-           the for body is passed as n->left of a wrapper when needed.
-           Conservatively walk every remaining child. */
+       
         if (n->extra && n->extra->next) {
             check_stmts(n->extra->next);
         }
@@ -688,7 +649,34 @@ static void check_stmt(ASTNode *n)
         return;
     }
 
-    /* ---- return ---- */
+    case NODE_FOR_RANGE:
+        case NODE_FOR_RANGE_STEP: {
+            /* declare loop variable in loop scope */
+            inside_loop++;
+            scope_push();
+            sym_declare(n->sval, SEM_TYPE_NUMERIC, 0, 0, 0, 0, 0, n->line);
+            check_expr(n->left);   /* start */
+            check_expr(n->extra->type == NODE_STMT_LIST
+                       ? n->extra->left : n->extra);  /* end */
+            if (n->type == NODE_FOR_RANGE_STEP)
+                check_expr(n->extra->right);           /* step */
+            check_stmts(n->right);                     /* body */
+            scope_pop();
+            inside_loop--;
+            return;
+        }
+
+        case NODE_INCREMENT:
+        case NODE_DECREMENT: {
+            SemSymbol *s = sym_find_visible(n->sval);
+            if (!s)
+                sem_error(n->line, "use of undeclared variable '%s'", n->sval);
+            else if (s->is_array)
+                sem_error(n->line, "'%s' is an array; cannot increment/decrement directly", n->sval);
+            return;
+        }
+
+    
     case NODE_RETURN: {
         if (!current_func) {
             sem_error(n->line, "'return' with value outside of function");
@@ -725,13 +713,13 @@ static void check_stmt(ASTNode *n)
         return;
     }
 
-    /* ---- function definition ---- */
+    
     case NODE_FUNC_DEF: {
         SemFunc *saved_func = current_func;
         current_func = func_find(n->sval);
 
         scope_push();
-        /* Declare parameters as local variables */
+       
         ASTNode *p = n->left;
         while (p) {
             if (p->type == NODE_PARAM) {
@@ -740,7 +728,7 @@ static void check_stmt(ASTNode *n)
             }
             p = p->next;
         }
-        /* Analyse function body */
+       
         check_stmts(n->right);
         scope_pop();
 
@@ -748,24 +736,24 @@ static void check_stmt(ASTNode *n)
         return;
     }
 
-    /* ---- function call as statement (discarded return value) ---- */
+   
     case NODE_FUNC_CALL:
-        check_expr(n);   /* reuse expr checker */
+        check_expr(n);   
         return;
 
-    /* ---- program root ---- */
+    
     case NODE_PROGRAM:
         check_stmts(n->left);
         return;
 
     default:
-        /* Could be an expression used as a statement */
+       
         check_expr(n);
         return;
     }
 }
 
-/* Walk a linked statement list (via ->next). */
+
 static void check_stmts(ASTNode *n)
 {
     while (n) {
@@ -779,21 +767,17 @@ static void check_stmts(ASTNode *n)
     }
 }
 
-/* =========================================================
- *  First pass: collect all top-level function signatures
- *  so that forward-calls (calling a function defined later
- *  in the source) are valid.
- * ========================================================= */
+
 static void collect_functions(ASTNode *n)
 {
     if (!n) return;
 
     if (n->type == NODE_FUNC_DEF) {
         func_register(n);
-        return;   /* don't recurse into body during collection */
+        return;   
     }
 
-    /* Recurse over statement lists */
+  
     if (n->type == NODE_STMT_LIST) {
         collect_functions(n->left);
         collect_functions(n->right);
@@ -805,16 +789,14 @@ static void collect_functions(ASTNode *n)
         return;
     }
 
-    /* Walk ->next chain for top-level lists */
+   
     collect_functions(n->next);
 }
 
-/* =========================================================
- *  Public entry point
- * ========================================================= */
+
 int sem_analyse(ASTNode *root)
 {
-    /* Reset state */
+    
     sem_sym_count    = 0;
     sem_scope_top    = 0;
     sem_func_count   = 0;
@@ -829,13 +811,8 @@ int sem_analyse(ASTNode *root)
         return -1;
     }
  
-    /* ---- Pass 1: seed semantic function table from the runtime functab ----
-     *
-     * The parser calls func_define() for every function it encounters, so
-     * by the time sem_analyse() is called ALL functions (even those defined
-     * after main in the source) are already in functab.
-     * We mirror that into sem_funcs so that forward calls are always valid.
-     */
+    /*  Pass 1: seed semantic function table from the runtime functab */
+    
     for (int fi = 0; fi < funccount; fi++) {
         FuncEntry *fe = &functab[fi];
         if (sem_func_count >= SEM_FUNC_MAX) break;
@@ -846,10 +823,10 @@ int sem_analyse(ASTNode *root)
         for (int pi = 0; pi < fe->param_count && pi < PARAM_MAX; pi++)
             sf->param_types[pi] = fe->param_types[pi];
     }
-    /* Also walk AST for any definitions the above may have missed. */
+    
     collect_functions(root);
  
-    // /* ---- Pass 2: full semantic walk ---- */
+    //  Pass 2: full semantic walk 
  
     // /* Set up a synthetic "main" context so that Return inside
     //  * StartExam() / main is not flagged as "outside a function".
@@ -900,7 +877,7 @@ int sem_analyse(ASTNode *root)
         current_func = NULL;
     }
 
-    /* ---- Pass 3: walk StartExam / main body ---- */
+    /* Pass 3: walk  main body  */
     static SemFunc main_func;
     strncpy(main_func.name, "main", 63);
     main_func.ret_type    = 0;
@@ -913,7 +890,7 @@ int sem_analyse(ASTNode *root)
 
     current_func = NULL;
  
-    /* Summary */
+    
     if (sem_error_count > 0 || sem_warning_count > 0) {
         fprintf(stderr,
                 "\n[Semantic Analysis] %d error(s), %d warning(s) found.\n",

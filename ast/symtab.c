@@ -1,6 +1,4 @@
-/* =========================================================
- *  symtab.c  –  Symbol table implementation
- * ========================================================= */
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,19 +14,15 @@ int    symcount = 0;
 FuncEntry functab[FUNC_MAX];
 int funccount = 0;
 
-/* ------------------------------------------------------------------ */
-/* Scope / frame stack                                                  */
-/* ------------------------------------------------------------------ */
+
 #define FRAME_STACK_MAX 64
 static int frame_stack[FRAME_STACK_MAX];
 static int frame_top = 0;
 
-/* ------------------------------------------------------------------ */
-/* Function table                                                       */
-/* ------------------------------------------------------------------ */
+
 void func_define(const char *name, int ret_type,
                  ASTNode *params, ASTNode *body) {
-    /* Overwrite if already defined (redefinition allowed like C) */
+    // Overwrite if already defined (redefinition allowed) 
     for (int i = 0; i < funccount; i++) {
         if (strcmp(functab[i].name, name) == 0) {
             functab[i].ret_type = ret_type;
@@ -85,15 +79,9 @@ void sym_push_frame(void) {
 void sym_pop_frame(void) {
     if (frame_top <= 0) return;
     symcount = frame_stack[--frame_top];
-    /* Symbols above new symcount are simply dropped.
-       If any held heap-allocated arrays they would need freeing —
-       a production implementation would call free(); for this
-       interpreter the Symbol struct holds everything inline so
-       dropping the count is sufficient. */
+
 }
-/* ------------------------------------------------------------------ */
-/* Internal helper: find an existing entry or return -1               */
-/* ------------------------------------------------------------------ */
+
 static int sym_find(const char *name) {
     for (int i = 0; i < symcount; i++)
         if (strcmp(symtab[i].name, name) == 0)
@@ -101,7 +89,7 @@ static int sym_find(const char *name) {
     return -1;
 }
 
-/* Frame-aware find: searches only in the CURRENT frame */
+
 static int sym_find_in_frame(const char *name) {
     int frame_start = (frame_top > 0) ? frame_stack[frame_top - 1] : 0;
     for (int i = frame_start; i < symcount; i++)
@@ -110,11 +98,9 @@ static int sym_find_in_frame(const char *name) {
     return -1;
 }
 
-/* ------------------------------------------------------------------ */
-/* Scalar                                                              */
-/* ------------------------------------------------------------------ */
+
 void sym_set(const char *name, double value, int decl_type) {
-    /* When in a function frame, use frame-aware lookup */
+   
     int i = (frame_top > 0) ? sym_find_in_frame(name) : sym_find(name);
     if (i >= 0) {  
         symtab[i].value = value;
@@ -133,7 +119,7 @@ void sym_set(const char *name, double value, int decl_type) {
 }
 
 double sym_get(const char *name) {
-    /* When in a function frame, prefer frame-aware lookup */
+    
     int i = (frame_top > 0) ? sym_find_in_frame(name) : -1;
     if (i < 0) {
         /* Not in current frame, try global scope */
@@ -152,9 +138,7 @@ int sym_get_type(const char *name) {
     return symtab[i].type;
 }
 
-/* ------------------------------------------------------------------ */
-/* 1-D array                                                           */
-/* ------------------------------------------------------------------ */
+
 void sym_declare_array(const char *name, int size, int decl_type) {
     if (symcount >= SYMTAB_MAX) {
         fprintf(stderr, "Runtime error: symbol table full\n");
@@ -190,9 +174,7 @@ double sym_get_array(const char *name, int idx) {
     return symtab[i].array_values[idx];
 }
 
-/* ------------------------------------------------------------------ */
-/* 2-D array                                                           */
-/* ------------------------------------------------------------------ */
+
 void sym_declare_array2d(const char *name, int r, int c, int decl_type) {
     if (symcount >= SYMTAB_MAX) {
         fprintf(stderr, "Runtime error: symbol table full\n");

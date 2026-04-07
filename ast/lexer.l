@@ -70,6 +70,9 @@ HEADER_USER  \"[a-zA-Z_][a-zA-Z0-9_]*\.h\"
 
 
 "Repeat"        { return FOR; }
+"in"            { return IN; }
+"Increment"     { return INCREMENT; }
+"Decrement"     { return DECREMENT; }
 "WhileStudy"    { return WHILE; }
 "DoOnce"        { return DO; }
 "Skip"          { return CONTINUE; }

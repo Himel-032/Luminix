@@ -1,0 +1,8 @@
+Makefile
+Luminix v2.pdf
+Luminix v2.docx
+parser.tab.c
+ast/luminix.exe
+luminix.o
+input.txt
+output.txt

@@ -1,15 +1,14 @@
 
 #Attach <stdio.h>
 
-Number myFunc(Number a){
+Nothing myFunc(Number a){
     Show("It is a user-defined function");
-    Return a * fun();
+    Number b = 'a';
+    Return a ;
 }
-Number fun(){
-    Return 110;
-}
+
 StartExam(){
-    Number a = myFunc(500);
+    Number a = myFunc(1);
     Show(a);
 
   
